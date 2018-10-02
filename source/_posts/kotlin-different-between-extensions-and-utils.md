@@ -3,7 +3,7 @@ title: Kotlin 中 Extensions 和 Utils 的区别
 date : 2018.10.01
 ---
 
-Extensions 看起来类似 JS 中的 prototype（但是实际上是两种不同的概念）：你可以直接给一个类添加它原来所没有的方法，不论这个类是抽象类，还是不可继承的 final 的类。
+Extensions 看起来类似 JS 中的 prototype（但实际上是两种不同的概念）：你可以直接给一个类添加它原来所没有的方法，不论这个类是抽象类，还是不可继承的 final 的类。
 
 现在存在一个名为 ContextExtensions.kt 的文件，它简单给 Context 扩展了 dp 转 px 的方法：
 
@@ -42,7 +42,7 @@ fun Context.openUrl(url: String) {
 }
 ```
 
-看起来和 dp2px 差不多，都是依赖 Context 来做自己想做的事情，但是我们按照场景仔细想想：
+看起来和 dp2px 差不多，都是依赖 Context 来做自己想做的事情，但是我们**按照场景**仔细想想：
 
 dp2px 本质上是类似 getString 的 Context 自身已有的方法的分类；而 openUrl 则是凭空创造了一种 Context 的使用场景，不够纯粹；当一个 Extension 的代码不再关注这个类本身，而仅仅是使用 this 来作为另一种场景的依赖时，就不能作为 Extension 存在了，你应该把他转换为 Util 的代码。
 
