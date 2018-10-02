@@ -42,7 +42,7 @@ tags_overview: true
 #   - post_count: whether to show only the x most recent posts.
 posts_overview:
   show_all_posts: false
-  post_count: 5
+  post_count: 10
 
 
 ##############################################################################
