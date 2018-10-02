@@ -82,4 +82,6 @@ theme: cactus
 # Deployment
 ## Docs: https://hexo.io/docs/deployment.html
 deploy:
-  type:
+  type: git
+  repo: https://github.com/mthli/mthli.github.io
+  branch: master
