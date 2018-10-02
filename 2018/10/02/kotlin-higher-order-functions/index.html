@@ -6,17 +6,17 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="HandheldFriendly" content="True">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-    <meta name="description" content="首先我们要明确，Kotlin functions are first-class ，这句话是什么意思呢？ 知乎上一个比较好的回答是：  函数是第一类对象，第一类值或对象要满足下列特征：  可以被存放在变量和数据结构中 可以当做参数传递给子过程 可以当子过程的返回值 可以在运行期间被创建  一个对象（广义概念上）在运行期间被创建，可以当做一个参数被传递，从子函数返回或者可以被赋给一个变量。  PS:">
+    <meta name="description" content="首先我们要明确，Kotlin functions are first-class ，这句话是什么意思呢？ 知乎上一个比较好的回答是：  函数是第一类对象，第一类值或对象要满足下列特征：  可以被存放在变量和数据结构中 可以当做参数传递给子过程 可以当子过程的返回值 可以在运行期间被创建  一个对象（广义概念上）在运行期间被创建，可以当做一个参数被传递，从子函数返回或者可以被赋给一个变量。熟悉了这个">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Kotlin 中的高阶函数">
 <meta property="og:url" content="https://mthli.github.io/2018/10/02/kotlin-higher-order-functions/index.html">
 <meta property="og:site_name" content="亮哥大杂烩">
-<meta property="og:description" content="首先我们要明确，Kotlin functions are first-class ，这句话是什么意思呢？ 知乎上一个比较好的回答是：  函数是第一类对象，第一类值或对象要满足下列特征：  可以被存放在变量和数据结构中 可以当做参数传递给子过程 可以当子过程的返回值 可以在运行期间被创建  一个对象（广义概念上）在运行期间被创建，可以当做一个参数被传递，从子函数返回或者可以被赋给一个变量。  PS:">
+<meta property="og:description" content="首先我们要明确，Kotlin functions are first-class ，这句话是什么意思呢？ 知乎上一个比较好的回答是：  函数是第一类对象，第一类值或对象要满足下列特征：  可以被存放在变量和数据结构中 可以当做参数传递给子过程 可以当子过程的返回值 可以在运行期间被创建  一个对象（广义概念上）在运行期间被创建，可以当做一个参数被传递，从子函数返回或者可以被赋给一个变量。熟悉了这个">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2018-10-02T13:17:23.074Z">
+<meta property="og:updated_time" content="2018-10-02T13:20:38.464Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Kotlin 中的高阶函数">
-<meta name="twitter:description" content="首先我们要明确，Kotlin functions are first-class ，这句话是什么意思呢？ 知乎上一个比较好的回答是：  函数是第一类对象，第一类值或对象要满足下列特征：  可以被存放在变量和数据结构中 可以当做参数传递给子过程 可以当子过程的返回值 可以在运行期间被创建  一个对象（广义概念上）在运行期间被创建，可以当做一个参数被传递，从子函数返回或者可以被赋给一个变量。  PS:">
+<meta name="twitter:description" content="首先我们要明确，Kotlin functions are first-class ，这句话是什么意思呢？ 知乎上一个比较好的回答是：  函数是第一类对象，第一类值或对象要满足下列特征：  可以被存放在变量和数据结构中 可以当做参数传递给子过程 可以当子过程的返回值 可以在运行期间被创建  一个对象（广义概念上）在运行期间被创建，可以当做一个参数被传递，从子函数返回或者可以被赋给一个变量。熟悉了这个">
     
     
         
@@ -134,7 +134,7 @@
   
 
   <div class="content" itemprop="articleBody">
-    <p>首先我们要明确，Kotlin functions are first-class ，这句话是什么意思呢？</p>
+    <p>首先我们要明确，Kotlin functions are <a href="https://en.wikipedia.org/wiki/First-class_function" target="_blank" rel="noopener">first-class</a> ，这句话是什么意思呢？</p>
 <p><a href="https://www.zhihu.com/question/19959217/answer/13482599" target="_blank" rel="noopener">知乎上一个比较好的回答是</a>：</p>
 <blockquote>
 <p>函数是第一类对象，第一类值或对象要满足下列特征：</p>
@@ -144,7 +144,7 @@
 <li>可以当子过程的返回值</li>
 <li>可以在运行期间被创建</li>
 </ul>
-<p>一个对象（广义概念上）在运行期间被创建，可以当做一个参数被传递，从子函数返回或者可以被赋给一个变量。</p>
+<p>一个对象（广义概念上）在运行期间被创建，可以当做一个参数被传递，从子函数返回或者可以被赋给一个变量。熟悉了这个概念就可以了解下闭包了。</p>
 </blockquote>
 <p>PS: 下文不对「函数」和「方法」做具体区分，你可以认为它俩表达的是同一个意思（但狭义上确实不是）。</p>
 <p>举个直观的例子，我现在定义一个点击事件的回调：</p>
