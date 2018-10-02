@@ -7,19 +7,19 @@ date : 2017.04.06
 
 RV 滑动展示数据的过程，简单可以概括为输入、动画、布局、渲染四个过程，如下图所示，在 Android 5.0 以上具体的渲染过程会交付给 RenderThread（包括阴影的绘制等都由这个线程绘制，而不是 UI Thread ，这也是 5.0 开始图形性能大幅提升的重要原因）：
 
-![](/images/2017-04-06-rv-input-normal.png)
+![](/images/2017-04-06-normal.png)
 
 我们都知道的事实是，滑动展示过程单帧少于 16ms 是 OK 的，超过 16ms 是卡顿的，下图形象地展示了繁重的输入过程会导致卡顿：
 
-![](/images/2017-04-06-rv-input-block.png)
+![](/images/2017-04-06-block.png)
 
 输入过重的一个重要原因是，展示当前列表项时，同时也在创建下一个新的、没有被缓存的列表项：
 
-![](/images/2017-04-06-rv-input-create.png)
+![](/images/2017-04-06-create.png)
 
 针对这个问题，官方提供的解决方案也很简洁，一次展示过程分别在 UI Thread 和 RenderThread 中完成，两者之间存在顺序关系；由于是不同的线程，线程等待的过程中自然可以利用空闲时间来先把下一次展示过程可以做的先做了，比如创建新的列表项：
 
-![](/images/2017-04-06-rv-input-solution.png)
+![](/images/2017-04-06-solution.png)
 
 开启这样的设置也很简单，只需要升级到 RecyclerView v25.1.0 以上即可，默认提供的 LayoutManager 均提供 prefetch 功能。如果是你自己实现的 LayoutManager 就要自己实现了，具体请参考[这篇博客](https://medium.com/google-developers/recyclerview-prefetch-c2f269075710)。
 
