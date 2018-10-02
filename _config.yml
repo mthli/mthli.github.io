@@ -8,12 +8,12 @@ subtitle:
 description:
 keywords:
 author: Matthew Lee
-language: zh-CN
+language: en
 timezone: Asia/Shanghai
 
 # URL
 ## If your site is put in a subdirectory, set url as 'http://yoursite.com/child' and root as '/child/'
-url: http://yoursite.com
+url: https://mthli.github.io
 root: /
 permalink: :year/:month/:day/:title/
 permalink_defaults:
@@ -62,7 +62,7 @@ tag_map:
 ## Hexo uses Moment.js to parse and display date
 ## You can customize the date format as defined in
 ## http://momentjs.com/docs/#/displaying/format/
-date_format: YYYY-MM-DD
+date_format: YYYY.MM.DD
 time_format: HH:mm:ss
 
 # Pagination

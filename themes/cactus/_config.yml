@@ -5,7 +5,7 @@
 # Link to a page that gives an overview of all your projects.
 # This can be an external link (e.g., to you GitHub profile) or to another
 # page within your website.
-projects_url: http://github.com/probberechts
+projects_url: https://github.com/mthli
 
 # Set the page direction to RTL or LTR. default is LTR. (if you set it 'rtl', the 'vazir' font will be loaded.)
 direction: ltr
@@ -15,9 +15,10 @@ direction: ltr
 # languages/*.yml
 nav:
   home: /
-  about: /about/
+  # about: /about/
   articles: /archives/
-  projects: projects_url
+  projects: https://github.com/mthli
+  twitter: https://twitter.com/mth_li
 
 
 # Links to your social media accounts.
@@ -25,11 +26,11 @@ nav:
 # (see https://fontawesome.com/icons?d=gallery&s=brands);
 # only 'mail' is an exception.
 social_links:
-  github: http://github.com/probberechts/cactus-dark
-  twitter: /
-  facebook: /
-  linkedin: /
-  mail: mailto:name@email.com
+  github: https://github.com/mthli
+  twitter: https://twitter.com/mth_li
+  # facebook: /
+  # linkedin: /
+  mail: mailto:matthewlee0725@gmail.com
 
 # Customize the overview with displaying a tagcloud on the index page.
 # Options: https://hexo.io/docs/helpers.html#tagcloud
@@ -60,7 +61,7 @@ logo:
   width: 50
   height: 50
   url: /images/logo.png
-  gravatar: false
+  gravatar: true
 
 # Customize the favicons.
 # Cactus supports a limited set of the three most important icons:
@@ -74,13 +75,13 @@ logo:
 favicon:
   desktop:
     url: /images/favicon.ico
-    gravatar: false
+    gravatar: true
   android:
     url: /images/favicon-192x192.png
-    gravatar: false
+    gravatar: true
   apple:
     url: /images/apple-touch-icon.png
-    gravatar: false
+    gravatar: true
 
 # The color scheme that should be used to highlight codeblocks.
 # See source/css/_highlight for a list of all available color schemes.
@@ -116,8 +117,8 @@ open_graph:
 
 # Fill in your Disqus Comments Shortname to enable Disqus comments.
 disqus:
-  enabled: false
-  shortname: cactus-1
+  enabled: true
+  shortname: mthli
 
 # Fill in your Google Analytics tracking ID to enable Google Analytics.
 google_analytics:
@@ -132,4 +133,4 @@ baidu_analytics:
 # Fill in you Gravatar user id / email if you want to use your gravatar as the
 # logo and/or favicons of you website.
 gravatar:
-  email: name@email.com
+  email: matthewlee0725@gmail.com
