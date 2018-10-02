@@ -41,7 +41,7 @@ tags_overview: true
 #   - show_all_posts: whether to show all available posts.
 #   - post_count: whether to show only the x most recent posts.
 posts_overview:
-  show_all_posts: false
+  show_all_posts: true
   post_count: 10
 
 
