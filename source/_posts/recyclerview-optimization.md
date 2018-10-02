@@ -3,7 +3,7 @@ title: RecyclerView 性能优化
 date : 2017.04.06
 ---
 
-老文一篇，参考 Google 在 Medium 上发表的文章 [*RecyclerView Prefetch*](https://medium.com/google-developers/recyclerview-prefetch-c2f269075710). RV 是非常成熟的一个框架，GitHub 上有很多基于 RV 的库，大多数都属于 bootstrap 类型，也就是方便管理和使用 RV ；但要提到性能，和裸写并没有什么区别。相反在编码时注意一些事项更能优化性能。
+老文一篇，参考 Google 在 Medium 上发表的文章 [RecyclerView Prefetch](https://medium.com/google-developers/recyclerview-prefetch-c2f269075710). RV 是非常成熟的一个框架，GitHub 上有很多基于 RV 的库，大多数都属于 bootstrap 类型，也就是方便管理和使用 RV ；但要提到性能，和裸写并没有什么区别。相反在编码时注意一些事项更能优化性能。
 
 RV 滑动展示数据的过程，简单可以概括为输入、动画、布局、渲染四个过程，如下图所示，在 Android 5.0 以上具体的渲染过程会交付给 RenderThread（包括阴影的绘制等都由这个线程绘制，而不是 UI Thread ，这也是 5.0 开始图形性能大幅提升的重要原因）：
 
