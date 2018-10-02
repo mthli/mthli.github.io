@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="Extensions 看起来类似 JS 中的 prototype（但是实际上是两种不同的概念）：你可以直接给一个类添加它原来所没有的方法，不论这个类是抽象类，还是不可继承的 final 的类。 现在存在一个名为 ContextExtensions.kt 的文件，它简单给 Context 扩展了 dp 转 px 的方法： import android.content.Contextimport an">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Kotlin 中 Extensions 和 Utils 的区别">
+<meta property="og:url" content="https://mthli.github.io/2018/10/01/kotlin-different-between-extensions-and-utils/index.html">
+<meta property="og:site_name" content="亮哥大杂烩">
+<meta property="og:description" content="Extensions 看起来类似 JS 中的 prototype（但是实际上是两种不同的概念）：你可以直接给一个类添加它原来所没有的方法，不论这个类是抽象类，还是不可继承的 final 的类。 现在存在一个名为 ContextExtensions.kt 的文件，它简单给 Context 扩展了 dp 转 px 的方法： import android.content.Contextimport an">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2018-10-02T16:18:47.589Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Kotlin 中 Extensions 和 Utils 的区别">
+<meta name="twitter:description" content="Extensions 看起来类似 JS 中的 prototype（但是实际上是两种不同的概念）：你可以直接给一个类添加它原来所没有的方法，不论这个类是抽象类，还是不可继承的 final 的类。 现在存在一个名为 ContextExtensions.kt 的文件，它简单给 Context 扩展了 dp 转 px 的方法： import android.content.Contextimport an">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="https://www.gravatar.com/avatar/06601def6c7ee3967ea0cfcf9cd8b970?s=16">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="https://www.gravatar.com/avatar/06601def6c7ee3967ea0cfcf9cd8b970?s=192" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="https://www.gravatar.com/avatar/06601def6c7ee3967ea0cfcf9cd8b970?s=180">
+          
+        
+    
+    <!-- title -->
+    <title>Kotlin 中 Extensions 和 Utils 的区别</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- persian styles -->
+    
+      <link rel="stylesheet" href="/css/rtl.css">
+    
+    <!-- rss -->
+    
+    
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Articles</a></li>
+         
+          <li><a href="https://github.com/mthli">GitHub</a></li>
+         
+          <li><a href="https://twitter.com/mth_li">Twitter</a></li>
+         
+          <li><a href="https://instagram.com/mth_li">Ins</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li><a class="icon" href="/2018/10/02/kotlin-higher-order-functions/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
+        
+        
+        <li><a class="icon" href="/2017/09/06/final-r-in-android-library/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share the post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=https://mthli.github.io/2018/10/01/kotlin-different-between-extensions-and-utils/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=https://mthli.github.io/2018/10/01/kotlin-different-between-extensions-and-utils/&text=Kotlin 中 Extensions 和 Utils 的区别"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=https://mthli.github.io/2018/10/01/kotlin-different-between-extensions-and-utils/&title=Kotlin 中 Extensions 和 Utils 的区别"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https://mthli.github.io/2018/10/01/kotlin-different-between-extensions-and-utils/&is_video=false&description=Kotlin 中 Extensions 和 Utils 的区别"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Kotlin 中 Extensions 和 Utils 的区别&body=Check out this article: https://mthli.github.io/2018/10/01/kotlin-different-between-extensions-and-utils/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=https://mthli.github.io/2018/10/01/kotlin-different-between-extensions-and-utils/&title=Kotlin 中 Extensions 和 Utils 的区别"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=https://mthli.github.io/2018/10/01/kotlin-different-between-extensions-and-utils/&title=Kotlin 中 Extensions 和 Utils 的区别"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=https://mthli.github.io/2018/10/01/kotlin-different-between-extensions-and-utils/&title=Kotlin 中 Extensions 和 Utils 的区别"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=https://mthli.github.io/2018/10/01/kotlin-different-between-extensions-and-utils/&title=Kotlin 中 Extensions 和 Utils 的区别"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=https://mthli.github.io/2018/10/01/kotlin-different-between-extensions-and-utils/&name=Kotlin 中 Extensions 和 Utils 的区别&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index my4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        Kotlin 中 Extensions 和 Utils 的区别
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">亮哥大杂烩</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2018-09-30T16:00:00.000Z" itemprop="datePublished">2018.10.01</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>Extensions 看起来类似 JS 中的 prototype（但是实际上是两种不同的概念）：你可以直接给一个类添加它原来所没有的方法，不论这个类是抽象类，还是不可继承的 final 的类。</p>
+<p>现在存在一个名为 ContextExtensions.kt 的文件，它简单给 Context 扩展了 dp 转 px 的方法：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> android.content.Context</span><br><span class="line"><span class="keyword">import</span> android.support.annotation.FloatRange</span><br><span class="line"><span class="keyword">import</span> android.util.TypedValue</span><br><span class="line"></span><br><span class="line">fun Context.dp2px(<span class="meta">@FloatRange</span>(from = <span class="number">0.0</span>) dp: Float): Int &#123;</span><br><span class="line">    <span class="keyword">return</span> TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, resources.displayMetrics).toInt()</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="comment">// 使用时，</span></span><br><span class="line"><span class="comment">// context.dp2px(...)</span></span><br></pre></td></tr></table></figure>
+<p>我们注意到，对于 dp2px 这个方法来说，本来应该是写在 Utils 里面的，但是现在却通过 Extensions 实现了，那么是不是所有 Utils 都可以用 Extensions 实现呢？</p>
+<p>代码层面上确实可以做到，但是我们不建议这样做。而只是应该在适当的场景下，才使用 Extensions 实现 Utils 的功能。假设现在有另外一个依赖 Context 的功能，比如通过 Chrome Custion Tabs 打开一个网页，用 Utils 来写是这样的：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">object CustomTabsUtils &#123;</span><br><span class="line">    <span class="function">fun <span class="title">openUrl</span><span class="params">(context: Context, url: String)</span> </span>&#123;</span><br><span class="line">        val builder = CustomTabsIntent.Builder()</span><br><span class="line">        builder.build().launchUrl(context, Uri.parse(url))</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>用 Extensions 来写是这样的：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line">fun Context.openUrl(url: String) &#123;</span><br><span class="line">    val builder = CustomTabsIntent.Builder()</span><br><span class="line">    builder.build().launchUrl(<span class="keyword">this</span>, Uri.parse(url)) <span class="comment">// this 就是 context</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>看起来和 dp2px 差不多，都是依赖 Context 来做自己想做的事情，但是我们按照场景仔细想想：</p>
+<p>dp2px 本质上是类似 getString 的 Context 自身已有的方法的分类；而 openUrl 则是凭空创造了一种 Context 的使用场景，不够纯粹；当一个 Extension 的代码不再关注这个类本身，而仅仅是使用 this 来作为另一种场景的依赖时，就不能作为 Extension 存在了，你应该把他转换为 Util 的代码。</p>
+<p><strong>永远记住：Extensions 只是用来扩展类本身的属性，而不是作为另一种场景的依赖而存在。</strong></p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    <!--
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Articles</a></li>
+         
+          <li><a href="https://github.com/mthli">GitHub</a></li>
+         
+          <li><a href="https://twitter.com/mth_li">Twitter</a></li>
+         
+          <li><a href="https://instagram.com/mth_li">Ins</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=https://mthli.github.io/2018/10/01/kotlin-different-between-extensions-and-utils/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=https://mthli.github.io/2018/10/01/kotlin-different-between-extensions-and-utils/&text=Kotlin 中 Extensions 和 Utils 的区别"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=https://mthli.github.io/2018/10/01/kotlin-different-between-extensions-and-utils/&title=Kotlin 中 Extensions 和 Utils 的区别"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https://mthli.github.io/2018/10/01/kotlin-different-between-extensions-and-utils/&is_video=false&description=Kotlin 中 Extensions 和 Utils 的区别"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Kotlin 中 Extensions 和 Utils 的区别&body=Check out this article: https://mthli.github.io/2018/10/01/kotlin-different-between-extensions-and-utils/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=https://mthli.github.io/2018/10/01/kotlin-different-between-extensions-and-utils/&title=Kotlin 中 Extensions 和 Utils 的区别"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=https://mthli.github.io/2018/10/01/kotlin-different-between-extensions-and-utils/&title=Kotlin 中 Extensions 和 Utils 的区别"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=https://mthli.github.io/2018/10/01/kotlin-different-between-extensions-and-utils/&title=Kotlin 中 Extensions 和 Utils 的区别"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=https://mthli.github.io/2018/10/01/kotlin-different-between-extensions-and-utils/&title=Kotlin 中 Extensions 和 Utils 的区别"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=https://mthli.github.io/2018/10/01/kotlin-different-between-extensions-and-utils/&name=Kotlin 中 Extensions 和 Utils 的区别&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+    
+    -->
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2018 Matthew Lee
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Articles</a></li>
+         
+          <li><a href="https://github.com/mthli">GitHub</a></li>
+         
+          <li><a href="https://twitter.com/mth_li">Twitter</a></li>
+         
+          <li><a href="https://instagram.com/mth_li">Ins</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+<link rel="stylesheet" href="/lib/justified-gallery/css/justifiedGallery.min.css">
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/js/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'mthli';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+
