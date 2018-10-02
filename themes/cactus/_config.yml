@@ -19,7 +19,7 @@ nav:
   articles: /archives/
   projects: https://github.com/mthli
   twitter: https://twitter.com/mth_li
-  instagram: https://instagram.com/mth_li
+  ins: https://instagram.com/mth_li
 
 
 # Links to your social media accounts.
@@ -29,7 +29,7 @@ nav:
 social_links:
   github: https://github.com/mthli
   twitter: https://twitter.com/mth_li
-  instagram: https://instagram.com/mth_li
+  ins: https://instagram.com/mth_li
   # facebook: /
   # linkedin: /
   mail: mailto:matthewlee0725@gmail.com
