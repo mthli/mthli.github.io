@@ -20,8 +20,8 @@ index:
 
 post:
   desktop:
-    previous: Previous
-    next: Next
+    previous: Previous post
+    next: Next post
     back_to_top: Back to top
     share: Share the post
   mobile:
