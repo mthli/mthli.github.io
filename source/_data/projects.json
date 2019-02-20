@@ -18,10 +18,15 @@
         "name" : "zhihu/mirror",
         "url"  : "https://github.com/zhihu/mirror",
         "desc" : "Yet another Sketch Mirror App for Android."
-     },
-     {
+    },
+    {
+        "name" : "zhihu/SugarAdapter",
+        "url"  : "https://github.com/zhihu/SugarAdapter",
+        "desc" : "Make RecyclerView.Adapter Great Again!"
+    },
+    {
         "name" : "Mount",
         "url"  : "https://github.com/mthli/Mount",
         "desc" : "mount/umount apps that you don't like on Android, without root."
-     }
+    }
 ]
