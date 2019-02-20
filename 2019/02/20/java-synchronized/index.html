@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="关于 synchronized 关键字 Oracle 官方有一篇简洁易懂的文档，以下是我简单的整理。 首先我们需要知道的是，Java 中任意的 class（类）或 object（对象）都有一个内建的锁，称为 intrinsic lock 或 monitor lock. 这个锁你可以理解为是官方方便大家才内建的，如果没有这个内建的锁，你自己创建一个自定义的锁也可以达到同样的效果，只是比较繁琐罢了。">
+<meta property="og:type" content="article">
+<meta property="og:title" content="对 Java synchronized 关键字的理解">
+<meta property="og:url" content="https://mthli.github.io/2019/02/20/java-synchronized/index.html">
+<meta property="og:site_name" content="亮哥大杂烩">
+<meta property="og:description" content="关于 synchronized 关键字 Oracle 官方有一篇简洁易懂的文档，以下是我简单的整理。 首先我们需要知道的是，Java 中任意的 class（类）或 object（对象）都有一个内建的锁，称为 intrinsic lock 或 monitor lock. 这个锁你可以理解为是官方方便大家才内建的，如果没有这个内建的锁，你自己创建一个自定义的锁也可以达到同样的效果，只是比较繁琐罢了。">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-02-20T10:28:42.872Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="对 Java synchronized 关键字的理解">
+<meta name="twitter:description" content="关于 synchronized 关键字 Oracle 官方有一篇简洁易懂的文档，以下是我简单的整理。 首先我们需要知道的是，Java 中任意的 class（类）或 object（对象）都有一个内建的锁，称为 intrinsic lock 或 monitor lock. 这个锁你可以理解为是官方方便大家才内建的，如果没有这个内建的锁，你自己创建一个自定义的锁也可以达到同样的效果，只是比较繁琐罢了。">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="https://www.gravatar.com/avatar/06601def6c7ee3967ea0cfcf9cd8b970?s=16">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="https://www.gravatar.com/avatar/06601def6c7ee3967ea0cfcf9cd8b970?s=192" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="https://www.gravatar.com/avatar/06601def6c7ee3967ea0cfcf9cd8b970?s=180">
+          
+        
+    
+    <!-- title -->
+    <title>对 Java synchronized 关键字的理解</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- persian styles -->
+    
+      <link rel="stylesheet" href="/css/rtl.css">
+    
+    <!-- rss -->
+    
+    
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Articles</a></li>
+         
+          <li><a href="https://github.com/mthli">GitHub</a></li>
+         
+          <li><a href="https://twitter.com/mth_li">Twitter</a></li>
+         
+          <li><a href="https://instagram.com/mth_li">Ins</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" href="/2018/10/02/kotlin-higher-order-functions/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share this post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=https://mthli.github.io/2019/02/20/java-synchronized/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=https://mthli.github.io/2019/02/20/java-synchronized/&text=对 Java synchronized 关键字的理解"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=https://mthli.github.io/2019/02/20/java-synchronized/&title=对 Java synchronized 关键字的理解"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https://mthli.github.io/2019/02/20/java-synchronized/&is_video=false&description=对 Java synchronized 关键字的理解"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=对 Java synchronized 关键字的理解&body=Check out this article: https://mthli.github.io/2019/02/20/java-synchronized/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=https://mthli.github.io/2019/02/20/java-synchronized/&title=对 Java synchronized 关键字的理解"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=https://mthli.github.io/2019/02/20/java-synchronized/&title=对 Java synchronized 关键字的理解"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=https://mthli.github.io/2019/02/20/java-synchronized/&title=对 Java synchronized 关键字的理解"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=https://mthli.github.io/2019/02/20/java-synchronized/&title=对 Java synchronized 关键字的理解"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=https://mthli.github.io/2019/02/20/java-synchronized/&name=对 Java synchronized 关键字的理解&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#使用-synchronized-修饰方法"><span class="toc-number">1.</span> <span class="toc-text">使用 synchronized 修饰方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用-synchronized-修饰代码块"><span class="toc-number">2.</span> <span class="toc-text">使用 synchronized 修饰代码块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#可重入的锁"><span class="toc-number">3.</span> <span class="toc-text">可重入的锁</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index my4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        对 Java synchronized 关键字的理解
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">亮哥大杂烩</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2019-02-19T16:00:00.000Z" itemprop="datePublished">2019.02.20</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>关于 synchronized 关键字 Oracle 官方有<a href="https://docs.oracle.com/javase/tutorial/essential/concurrency/locksync.html" target="_blank" rel="noopener">一篇简洁易懂的文档</a>，以下是我简单的整理。</p>
+<p>首先我们需要知道的是，Java 中任意的 class（类）或 object（对象）都有一个内建的锁，称为 intrinsic lock 或 monitor lock. 这个锁你可以理解为是官方方便大家才内建的，如果没有这个内建的锁，你自己创建一个自定义的锁也可以达到同样的效果，只是比较繁琐罢了。</p>
+<h2 id="使用-synchronized-修饰方法"><a href="#使用-synchronized-修饰方法" class="headerlink" title="使用 synchronized 修饰方法"></a>使用 synchronized 修饰方法</h2><p>当我们使用 synchronized 修饰一个<strong>非静态方法</strong>，锁住的是这个方法从属的 object(this) ，即<strong>对象锁</strong>，当该方法执行完毕（即使抛出异常）时，锁就会被释放。</p>
+<p>当我们使用 synchronized 修饰一个<strong>静态方法</strong>，锁住的是这个方法从属的 class ，即<strong>类锁</strong>，因为静态方法从属的是 class 而不是 object. 类锁与对象锁是不冲突的，锁住了其中一个，不意味着另外一个也锁住了。</p>
+<h2 id="使用-synchronized-修饰代码块"><a href="#使用-synchronized-修饰代码块" class="headerlink" title="使用 synchronized 修饰代码块"></a>使用 synchronized 修饰代码块</h2><p>使用 synchronized 修饰代码块时，必须显式指定一个对象来充当 intrinsic lock ，例如下面这段代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addName</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span>(<span class="keyword">this</span>) &#123;</span><br><span class="line">        lastName = name;</span><br><span class="line">        nameCount++;</span><br><span class="line">    &#125;</span><br><span class="line">    nameList.add(name);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在上述代码中，addName 需要同步地改变 laseName 和 nameCount, 但是需要同步地调用其他对象的方法，同步地调用其他对象的方法可能会导致<a href="https://docs.oracle.com/javase/tutorial/essential/concurrency/deadlock.html" target="_blank" rel="noopener">死锁</a>等问题。如果没有同步代码块，开发者就得自己实现一个单独的、非同步的方法来调用 nameList.add.</p>
+<p>使用 synchronized 修饰代码块同时可以提升并发的性能。举个例子：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MsLunch</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> c1 = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">long</span> c2 = <span class="number">0</span>;</span><br><span class="line">    <span class="keyword">private</span> Object lock1 = <span class="keyword">new</span> Object();</span><br><span class="line">    <span class="keyword">private</span> Object lock2 = <span class="keyword">new</span> Object();</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">inc1</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span>(lock1) &#123;</span><br><span class="line">            c1++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">inc2</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span>(lock2) &#123;</span><br><span class="line">            c2++;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>MsLunch 有两个成员变量 c1 和 c2, 这两个变量绝对不会在一起使用，同时更新这两个变量需要确保同步，但我们绝没有必要在更新 c1 时也把 c2 锁住，这样就减少了不必要的阻塞。</p>
+<h2 id="可重入的锁"><a href="#可重入的锁" class="headerlink" title="可重入的锁"></a>可重入的锁</h2><p>一个线程不能获得被另一个线程持有的锁，但是如果是自己持有的锁，则可以随意使用。这不仅在逻辑上是合理的，在代码实现上也简单很多，毕竟 Oracle 官方自己也承认：</p>
+<blockquote>
+<p>This describes a situation where synchronized code, directly or indirectly, invokes a method that also contains synchronized code, and both sets of code use the same lock. Without reentrant synchronization, synchronized code would have to take many additional precautions to avoid having a thread cause itself to block.</p>
+</blockquote>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    <!--
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Articles</a></li>
+         
+          <li><a href="https://github.com/mthli">GitHub</a></li>
+         
+          <li><a href="https://twitter.com/mth_li">Twitter</a></li>
+         
+          <li><a href="https://instagram.com/mth_li">Ins</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#使用-synchronized-修饰方法"><span class="toc-number">1.</span> <span class="toc-text">使用 synchronized 修饰方法</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#使用-synchronized-修饰代码块"><span class="toc-number">2.</span> <span class="toc-text">使用 synchronized 修饰代码块</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#可重入的锁"><span class="toc-number">3.</span> <span class="toc-text">可重入的锁</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=https://mthli.github.io/2019/02/20/java-synchronized/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=https://mthli.github.io/2019/02/20/java-synchronized/&text=对 Java synchronized 关键字的理解"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=https://mthli.github.io/2019/02/20/java-synchronized/&title=对 Java synchronized 关键字的理解"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https://mthli.github.io/2019/02/20/java-synchronized/&is_video=false&description=对 Java synchronized 关键字的理解"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=对 Java synchronized 关键字的理解&body=Check out this article: https://mthli.github.io/2019/02/20/java-synchronized/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=https://mthli.github.io/2019/02/20/java-synchronized/&title=对 Java synchronized 关键字的理解"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=https://mthli.github.io/2019/02/20/java-synchronized/&title=对 Java synchronized 关键字的理解"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=https://mthli.github.io/2019/02/20/java-synchronized/&title=对 Java synchronized 关键字的理解"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=https://mthli.github.io/2019/02/20/java-synchronized/&title=对 Java synchronized 关键字的理解"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=https://mthli.github.io/2019/02/20/java-synchronized/&name=对 Java synchronized 关键字的理解&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+    
+    -->
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2019 Matthew Lee
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Articles</a></li>
+         
+          <li><a href="https://github.com/mthli">GitHub</a></li>
+         
+          <li><a href="https://twitter.com/mth_li">Twitter</a></li>
+         
+          <li><a href="https://instagram.com/mth_li">Ins</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+<link rel="stylesheet" href="/lib/justified-gallery/css/justifiedGallery.min.css">
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/js/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'mthli';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+
