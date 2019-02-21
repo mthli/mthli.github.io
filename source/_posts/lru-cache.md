@@ -61,6 +61,8 @@ class LruCache(private val initialCapacity: Int) {
 
         // 将 node 衔接到尾节点上
         node.before = tail
+        node.after = null
+        tail?.after = node
         tail = node
 
         return node.value
@@ -87,12 +89,15 @@ class LruCache(private val initialCapacity: Int) {
             node.before?.apply { after = node.after }
             node.after?.apply { before = node.before }
             node.before = tail
+            node.after = null
+            tail?.after = node
             tail = node
         }
 
         // 如果超出限制，则删除当前头节点
         if (size.inc() > initialCapacity) {
-            head = head?.apply { map.remove(this.key) }?.after
+            head = head?.apply { map.remove(key) }?.after
+            head?.before = null
             size--
         }
 
