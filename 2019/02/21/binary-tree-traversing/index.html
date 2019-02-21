@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="最近在准备面试，不得不说业务写多了，基础方面还是疏漏了很多的。因此希望通过写博客的方式把自己复习的内容记录下来。今天就来复习一下二叉树的各种遍历。 对于一个二叉树而言，通常有两类遍历方式，一类是前序、中序、后序遍历，另一类则是深度遍历和广度遍历。对于前者而言，我们主要使用递归的思想；对于后者则是栈与队列。 如果用 D, L, R 分别代码访问根节点、访问左子树、访问右子树的话，前序遍历即 DLR,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="二叉树的各种遍历">
+<meta property="og:url" content="https://mthli.github.io/2019/02/21/binary-tree-traversing/index.html">
+<meta property="og:site_name" content="亮哥大杂烩">
+<meta property="og:description" content="最近在准备面试，不得不说业务写多了，基础方面还是疏漏了很多的。因此希望通过写博客的方式把自己复习的内容记录下来。今天就来复习一下二叉树的各种遍历。 对于一个二叉树而言，通常有两类遍历方式，一类是前序、中序、后序遍历，另一类则是深度遍历和广度遍历。对于前者而言，我们主要使用递归的思想；对于后者则是栈与队列。 如果用 D, L, R 分别代码访问根节点、访问左子树、访问右子树的话，前序遍历即 DLR,">
+<meta property="og:locale" content="en">
+<meta property="og:image" content="https://mthli.github.io/images/2019-02-21-binary-tree.png">
+<meta property="og:updated_time" content="2019-02-21T06:21:11.350Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="二叉树的各种遍历">
+<meta name="twitter:description" content="最近在准备面试，不得不说业务写多了，基础方面还是疏漏了很多的。因此希望通过写博客的方式把自己复习的内容记录下来。今天就来复习一下二叉树的各种遍历。 对于一个二叉树而言，通常有两类遍历方式，一类是前序、中序、后序遍历，另一类则是深度遍历和广度遍历。对于前者而言，我们主要使用递归的思想；对于后者则是栈与队列。 如果用 D, L, R 分别代码访问根节点、访问左子树、访问右子树的话，前序遍历即 DLR,">
+<meta name="twitter:image" content="https://mthli.github.io/images/2019-02-21-binary-tree.png">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="https://www.gravatar.com/avatar/06601def6c7ee3967ea0cfcf9cd8b970?s=16">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="https://www.gravatar.com/avatar/06601def6c7ee3967ea0cfcf9cd8b970?s=192" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="https://www.gravatar.com/avatar/06601def6c7ee3967ea0cfcf9cd8b970?s=180">
+          
+        
+    
+    <!-- title -->
+    <title>二叉树的各种遍历</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- persian styles -->
+    
+      <link rel="stylesheet" href="/css/rtl.css">
+    
+    <!-- rss -->
+    
+    
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Articles</a></li>
+         
+          <li><a href="https://github.com/mthli">GitHub</a></li>
+         
+          <li><a href="https://twitter.com/mth_li">Twitter</a></li>
+         
+          <li><a href="https://instagram.com/mth_li">Ins</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" href="/2019/02/20/java-synchronized/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share this post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=https://mthli.github.io/2019/02/21/binary-tree-traversing/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=https://mthli.github.io/2019/02/21/binary-tree-traversing/&text=二叉树的各种遍历"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=https://mthli.github.io/2019/02/21/binary-tree-traversing/&title=二叉树的各种遍历"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https://mthli.github.io/2019/02/21/binary-tree-traversing/&is_video=false&description=二叉树的各种遍历"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=二叉树的各种遍历&body=Check out this article: https://mthli.github.io/2019/02/21/binary-tree-traversing/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=https://mthli.github.io/2019/02/21/binary-tree-traversing/&title=二叉树的各种遍历"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=https://mthli.github.io/2019/02/21/binary-tree-traversing/&title=二叉树的各种遍历"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=https://mthli.github.io/2019/02/21/binary-tree-traversing/&title=二叉树的各种遍历"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=https://mthli.github.io/2019/02/21/binary-tree-traversing/&title=二叉树的各种遍历"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=https://mthli.github.io/2019/02/21/binary-tree-traversing/&name=二叉树的各种遍历&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index my4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        二叉树的各种遍历
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">亮哥大杂烩</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2019-02-21T06:21:11.350Z" itemprop="datePublished">2019.02.21</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>最近在准备面试，不得不说业务写多了，基础方面还是疏漏了很多的。因此希望通过写博客的方式把自己复习的内容记录下来。今天就来复习一下二叉树的各种遍历。</p>
+<p>对于一个二叉树而言，通常有两类遍历方式，一类是前序、中序、后序遍历，另一类则是深度遍历和广度遍历。对于前者而言，我们主要使用<strong>递归</strong>的思想；对于后者则是<strong>栈与队列</strong>。</p>
+<p>如果用 D, L, R 分别代码访问根节点、访问左子树、访问右子树的话，前序遍历即 DLR, 中序遍历即 LDR, 后序遍历即 LRD. 你也发现了，所谓的「序」就是访问根节点的顺序。下面是一个二叉树的实例：</p>
+<p><img src="/images/2019-02-21-binary-tree.png" alt=""></p>
+<p>DLR: 2 → 7 → 2 → 6 → 5 → 11 → 5 → 9 → 4</p>
+<p>LDR: 2 → 7 → 5 → 6 → 11 → 2 → 5 → 4 → 9</p>
+<p>LRD: 2 → 5 → 11 → 6 → 7 → 4 → 9 → 5 → 2</p>
+<p>注意了，无论是前序、中序还是后序，在遍历的时候一定要走到<strong>叶子节点</strong>后才开始输出，之后都是不断回溯的过程。因此它们都是深度遍历的一种情况，而递归的本质正是不断压栈出栈的过程。在这里选取前序遍历作为例子，来看看递归的实现和迭代的实现：</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.util.*</span><br><span class="line"></span><br><span class="line"><span class="keyword">object</span> BinaryTree &#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">data</span> <span class="class"><span class="keyword">class</span> <span class="title">Node</span></span>(<span class="keyword">val</span> value: <span class="built_in">Int</span>, <span class="keyword">val</span> left: Node?, <span class="keyword">val</span> right: Node?)</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 前序遍历的递归实现</span></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">recursiveDLR</span><span class="params">(root: <span class="type">Node</span>?)</span></span> &#123;</span><br><span class="line">         root?.let &#123;</span><br><span class="line">             println(it.value)</span><br><span class="line">             recursiveDLR(root.left)</span><br><span class="line">             recursiveDLR(root.right)</span><br><span class="line">         &#125;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 前序遍历的迭代实现</span></span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">iterateDLR</span><span class="params">(root: <span class="type">Node</span>)</span></span> &#123;</span><br><span class="line">        <span class="keyword">val</span> stack = Stack&lt;Node&gt;()</span><br><span class="line">        <span class="keyword">var</span> node: Node? = root</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (node != <span class="literal">null</span> || stack.isNotEmpty()) &#123;</span><br><span class="line">            node = node?.let &#123;</span><br><span class="line">                println(it.value)</span><br><span class="line">                stack.push(it)</span><br><span class="line">                it.left</span><br><span class="line">            &#125; ?: stack.pop().right</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>再来看看广度遍历。所谓的广度遍历，你也可以理解为层次遍历，先遍历第一层，再遍历第二层… 直到遍历完所有层为止。因此上述二叉树实例的输出结果为：2 → 7 → 5 → 2 → 6 → 9 → 5 → 11 → 4</p>
+<p>对应地广度搜索的队列实现如下：</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">fun</span> <span class="title">bfs</span><span class="params">(root: <span class="type">Node</span>)</span></span> &#123;</span><br><span class="line">    <span class="keyword">val</span> queue = LinkedList&lt;Node&gt;()</span><br><span class="line">    queue.offer(root)</span><br><span class="line"></span><br><span class="line">    <span class="keyword">while</span> (queue.isNotEmpty()) &#123;</span><br><span class="line">        <span class="keyword">val</span> node = queue.poll()</span><br><span class="line">        println(node.value)</span><br><span class="line">        node.left?.let &#123; queue.offer(it) &#125;</span><br><span class="line">        node.right?.let &#123; queue.offer(it) &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    <!--
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Articles</a></li>
+         
+          <li><a href="https://github.com/mthli">GitHub</a></li>
+         
+          <li><a href="https://twitter.com/mth_li">Twitter</a></li>
+         
+          <li><a href="https://instagram.com/mth_li">Ins</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=https://mthli.github.io/2019/02/21/binary-tree-traversing/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=https://mthli.github.io/2019/02/21/binary-tree-traversing/&text=二叉树的各种遍历"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=https://mthli.github.io/2019/02/21/binary-tree-traversing/&title=二叉树的各种遍历"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https://mthli.github.io/2019/02/21/binary-tree-traversing/&is_video=false&description=二叉树的各种遍历"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=二叉树的各种遍历&body=Check out this article: https://mthli.github.io/2019/02/21/binary-tree-traversing/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=https://mthli.github.io/2019/02/21/binary-tree-traversing/&title=二叉树的各种遍历"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=https://mthli.github.io/2019/02/21/binary-tree-traversing/&title=二叉树的各种遍历"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=https://mthli.github.io/2019/02/21/binary-tree-traversing/&title=二叉树的各种遍历"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=https://mthli.github.io/2019/02/21/binary-tree-traversing/&title=二叉树的各种遍历"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=https://mthli.github.io/2019/02/21/binary-tree-traversing/&name=二叉树的各种遍历&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+    
+    -->
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2019 Matthew Lee
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Articles</a></li>
+         
+          <li><a href="https://github.com/mthli">GitHub</a></li>
+         
+          <li><a href="https://twitter.com/mth_li">Twitter</a></li>
+         
+          <li><a href="https://instagram.com/mth_li">Ins</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+<link rel="stylesheet" href="/lib/justified-gallery/css/justifiedGallery.min.css">
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/js/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'mthli';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+
