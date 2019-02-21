@@ -22,10 +22,9 @@ LRD: 2 → 5 → 11 → 6 → 7 → 4 → 9 → 5 → 2
 ```kotlin
 import java.util.*
 
+data class Node(val value: Int, val left: Node?, val right: Node?)
+
 object BinaryTree {
-
-    data class Node(val value: Int, val left: Node?, val right: Node?)
-
     // 前序遍历的递归实现
     fun recursiveDLR(root: Node?) {
          root?.let {
