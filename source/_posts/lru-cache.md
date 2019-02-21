@@ -87,9 +87,11 @@ class LruCache(private val initialCapacity: Int) {
         // 如果超出限制，则删除当前头节点
         if (size.inc() > initialCapacity) {
             head = head?.apply { map.remove(this.key) }?.after
+            size--
         }
 
         map[key] = node
+        size++
     }
 }
 ```
