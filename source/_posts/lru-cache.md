@@ -40,6 +40,12 @@ data class Node(
         var before: Node?, var after: Node?)
 
 class LruCache(private val initialCapacity: Int) {
+    init {
+        if (initialCapacity < 1) {
+            throw IllegalArgumentException("initialCapacity must > 0")
+        }
+    }
+
     private val map = HashMap<String, Node>(initialCapacity)
 
     private var head: Node? = null
