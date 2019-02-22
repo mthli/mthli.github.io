@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="快排基于这样一种思想：在需要排序的数组中，选取其中一个数锚点，一次迭代过后，使参考值左边的数总是小于等于它，使参考值右边的数总是大于等于它；经过多次迭代后，最终整个数组会变得有序。 举个最简单的例子，假设存在随机数组 [5, 4, 2], 选取 4 作为锚点，则根据上述原则，一次迭代后数组变为 [2, 4, 5]. 即使数组非常大，在不断迭代过程中也会被切分为一个一个这样的小数组进行排序，最终它们">
+<meta property="og:type" content="article">
+<meta property="og:title" content="复习一下快排">
+<meta property="og:url" content="https://mthli.github.io/2019/02/22/quick-sort/index.html">
+<meta property="og:site_name" content="亮哥大杂烩">
+<meta property="og:description" content="快排基于这样一种思想：在需要排序的数组中，选取其中一个数锚点，一次迭代过后，使参考值左边的数总是小于等于它，使参考值右边的数总是大于等于它；经过多次迭代后，最终整个数组会变得有序。 举个最简单的例子，假设存在随机数组 [5, 4, 2], 选取 4 作为锚点，则根据上述原则，一次迭代后数组变为 [2, 4, 5]. 即使数组非常大，在不断迭代过程中也会被切分为一个一个这样的小数组进行排序，最终它们">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-02-22T10:58:11.978Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="复习一下快排">
+<meta name="twitter:description" content="快排基于这样一种思想：在需要排序的数组中，选取其中一个数锚点，一次迭代过后，使参考值左边的数总是小于等于它，使参考值右边的数总是大于等于它；经过多次迭代后，最终整个数组会变得有序。 举个最简单的例子，假设存在随机数组 [5, 4, 2], 选取 4 作为锚点，则根据上述原则，一次迭代后数组变为 [2, 4, 5]. 即使数组非常大，在不断迭代过程中也会被切分为一个一个这样的小数组进行排序，最终它们">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="https://www.gravatar.com/avatar/06601def6c7ee3967ea0cfcf9cd8b970?s=16">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="https://www.gravatar.com/avatar/06601def6c7ee3967ea0cfcf9cd8b970?s=192" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="https://www.gravatar.com/avatar/06601def6c7ee3967ea0cfcf9cd8b970?s=180">
+          
+        
+    
+    <!-- title -->
+    <title>复习一下快排</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- persian styles -->
+    
+      <link rel="stylesheet" href="/css/rtl.css">
+    
+    <!-- rss -->
+    
+    
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Articles</a></li>
+         
+          <li><a href="https://github.com/mthli">GitHub</a></li>
+         
+          <li><a href="https://twitter.com/mth_li">Twitter</a></li>
+         
+          <li><a href="https://instagram.com/mth_li">Ins</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" href="/2019/02/21/binary-tree-traversing/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share this post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=https://mthli.github.io/2019/02/22/quick-sort/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=https://mthli.github.io/2019/02/22/quick-sort/&text=复习一下快排"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=https://mthli.github.io/2019/02/22/quick-sort/&title=复习一下快排"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https://mthli.github.io/2019/02/22/quick-sort/&is_video=false&description=复习一下快排"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=复习一下快排&body=Check out this article: https://mthli.github.io/2019/02/22/quick-sort/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=https://mthli.github.io/2019/02/22/quick-sort/&title=复习一下快排"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=https://mthli.github.io/2019/02/22/quick-sort/&title=复习一下快排"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=https://mthli.github.io/2019/02/22/quick-sort/&title=复习一下快排"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=https://mthli.github.io/2019/02/22/quick-sort/&title=复习一下快排"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=https://mthli.github.io/2019/02/22/quick-sort/&name=复习一下快排&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index my4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        复习一下快排
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">亮哥大杂烩</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2019-02-21T16:00:00.000Z" itemprop="datePublished">2019.02.22</time>
+    </div>
+
+
+      
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>快排基于这样一种思想：在需要排序的数组中，选取其中一个数锚点，一次迭代过后，使参考值左边的数总是小于等于它，使参考值右边的数总是大于等于它；经过多次迭代后，最终整个数组会变得有序。</p>
+<p>举个最简单的例子，假设存在随机数组 [5, 4, 2], 选取 4 作为锚点，则根据上述原则，一次迭代后数组变为 [2, 4, 5]. 即使数组非常大，在不断迭代过程中也会被切分为一个一个这样的小数组进行排序，最终它们合起来的结果就是一个有序的大数组（可能你想到了归并排序）。</p>
+<p>举个复杂点的例子，假设存在下列随机数组：</p>
+<p>5 4 2 3 7 6 1 8 9</p>
+<p>为方便起见，在一次迭代过程中，我们一般选取数组的第一个元素 5 作为锚点：</p>
+<p><strong>5</strong> 4 2 3 7 6 1 8 9</p>
+<p>我们从右往左 (⇃) 遍历数组，找到第一个小于 5 的元素；在 5 之后从左往右 (⇂) 遍历数组，找到第一个大于 5 的元素；然后交换它俩的位置：</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;⇂&nbsp;&nbsp;&nbsp;⇃<br><strong>5</strong> 4 2 3 7 6 1 8 9 ⇒ <strong>5</strong> 4 2 3 1 6 7 8 9</p>
+<p><strong>继续</strong>从右往左 (⇃) 找下一个小于 5 的元素；从左往右 (⇂) 找下一个大于 5 的元素。注意，此时在遍历过程中，从右往左在找到目标之前，会先遇到从左往右的指针，此时就意味着本次遍历结束了，应当交换锚点 5 和这个相遇位置上的元素：</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↓<br><strong>5</strong> 4 2 3 1 6 7 8 9 ⇒ 1 4 2 3 <strong>5</strong> 6 7 8 9</p>
+<p>接着以锚点为分解，对锚点之前的数组和锚点之后的数组分别执行上述逻辑。在我们的例子中，锚点 5 后面的数组已经有序，就不展开讨论了；前面 [1, 4, 2, 3] 在后序迭代过程中，会逐步变为：</p>
+<p>1 [4, 2, 3] → 1 [3, 2] 4 → 1 2 3 4</p>
+<p>最后附上快排代码：</p>
+<figure class="highlight kotlin"><table><tr><td class="code"><pre><span class="line"><span class="keyword">object</span> QuickSort &#123;</span><br><span class="line">    <span class="function"><span class="keyword">fun</span> <span class="title">sort</span><span class="params">(array: <span class="type">IntArray</span>, low: <span class="type">Int</span>, high: <span class="type">Int</span>)</span></span> &#123;</span><br><span class="line">        <span class="keyword">if</span> (low &gt;= high) &#123;</span><br><span class="line">            <span class="keyword">return</span></span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">val</span> part = part(array, low, high)</span><br><span class="line">        sort(array, low, part - <span class="number">1</span>)</span><br><span class="line">        sort(array, part + <span class="number">1</span>, high)</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">private</span> <span class="function"><span class="keyword">fun</span> <span class="title">part</span><span class="params">(array: <span class="type">IntArray</span>, low: <span class="type">Int</span>, high: <span class="type">Int</span>)</span></span>: <span class="built_in">Int</span> &#123;</span><br><span class="line">        <span class="keyword">val</span> v = array[low]</span><br><span class="line">        <span class="keyword">var</span> i = low</span><br><span class="line">        <span class="keyword">var</span> j = high</span><br><span class="line"></span><br><span class="line">        <span class="keyword">while</span> (<span class="literal">true</span>) &#123;</span><br><span class="line">            <span class="comment">// 从右往左找到小于锚点的数</span></span><br><span class="line">            <span class="keyword">while</span> (array[j] &gt;= v) &#123;</span><br><span class="line">                <span class="keyword">if</span> (j - <span class="number">1</span> &lt; low) &#123;</span><br><span class="line">                    <span class="keyword">break</span></span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    j--</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 从左往右找到大于锚点的数</span></span><br><span class="line">            <span class="keyword">while</span> (array[i] &lt;= v) &#123;</span><br><span class="line">                <span class="keyword">if</span> (i + <span class="number">1</span> &gt; high) &#123;</span><br><span class="line">                    <span class="keyword">break</span></span><br><span class="line">                &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                    i++</span><br><span class="line">                &#125;</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="keyword">if</span> (i &gt;= j) &#123;</span><br><span class="line">                <span class="keyword">break</span></span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            <span class="comment">// 交换发现的两个数</span></span><br><span class="line">            <span class="keyword">val</span> temp = array[i]</span><br><span class="line">            array[i] = array[j]</span><br><span class="line">            array[j] = temp</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 交换锚点与指针相遇的位置上的数</span></span><br><span class="line">        <span class="keyword">val</span> temp = array[low]</span><br><span class="line">        array[low] = array[j]</span><br><span class="line">        array[j] = temp</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 返回指针相遇的位置</span></span><br><span class="line">        <span class="keyword">return</span> j</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    <!--
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Articles</a></li>
+         
+          <li><a href="https://github.com/mthli">GitHub</a></li>
+         
+          <li><a href="https://twitter.com/mth_li">Twitter</a></li>
+         
+          <li><a href="https://instagram.com/mth_li">Ins</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=https://mthli.github.io/2019/02/22/quick-sort/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=https://mthli.github.io/2019/02/22/quick-sort/&text=复习一下快排"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=https://mthli.github.io/2019/02/22/quick-sort/&title=复习一下快排"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https://mthli.github.io/2019/02/22/quick-sort/&is_video=false&description=复习一下快排"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=复习一下快排&body=Check out this article: https://mthli.github.io/2019/02/22/quick-sort/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=https://mthli.github.io/2019/02/22/quick-sort/&title=复习一下快排"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=https://mthli.github.io/2019/02/22/quick-sort/&title=复习一下快排"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=https://mthli.github.io/2019/02/22/quick-sort/&title=复习一下快排"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=https://mthli.github.io/2019/02/22/quick-sort/&title=复习一下快排"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=https://mthli.github.io/2019/02/22/quick-sort/&name=复习一下快排&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+    
+    -->
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2019 Matthew Lee
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Articles</a></li>
+         
+          <li><a href="https://github.com/mthli">GitHub</a></li>
+         
+          <li><a href="https://twitter.com/mth_li">Twitter</a></li>
+         
+          <li><a href="https://instagram.com/mth_li">Ins</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+<link rel="stylesheet" href="/lib/justified-gallery/css/justifiedGallery.min.css">
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/js/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'mthli';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+
