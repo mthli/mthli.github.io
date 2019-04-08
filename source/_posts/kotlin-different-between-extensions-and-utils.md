@@ -1,6 +1,7 @@
 ---
 title: Kotlin 中 Extensions 和 Utils 的区别
 date : 2018.10.01
+tag  : Kotlin
 ---
 
 Extensions 看起来类似 JS 中的 prototype（但实际上是两种不同的概念）：你可以直接给一个类添加它原来所没有的方法，不论这个类是抽象类，还是不可继承的 final 的类。

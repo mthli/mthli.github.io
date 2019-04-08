@@ -1,6 +1,7 @@
 ---
 title: 在 Android Library 中使用 R ID 常量
 date : 2017.09.06
+tag  : Android
 ---
 
 几个月前实现了一个叫做 SugarAdapter 的库，这是一个优秀的 RecyclerView 脚手架实现，用于支撑公司项目的快速开发，目前还未开源；但是其中使用到了类似 [ButterKnife](https://github.com/JakeWharton/butterknife) 的注解实现来简化代码。随着公司项目越来越大，组件化势在必行，业务代码纷纷拆分到各自的 module 中，此时就遇到了 R.java 中资源 ID 不为常量的问题，具体可以参考 [Non-constant Fields in Case Labels](http://tools.android.com/tips/non-constant-fields).

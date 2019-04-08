@@ -1,6 +1,7 @@
 ---
 title: 自定义阴影形状
 date : 2016.03.31
+tag  : Android
 ---
 
 Material Design 中介绍了 [Elevation and shadows](https://material.io/design/environment/elevation.html) 的概念，但是 Android 默认只支持给**圆形**、**矩形**、**圆角矩形**这 3 种形状的 View 添加投影，如果遇到其他特别的形状，比如三角形，系统就没法很好地支持。此时你可以选择自己切图来模拟，但是效果通常都不是很好，如果要一句话形容的话，大概就是没有系统绘制的投影带来的那种质感。
