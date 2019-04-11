@@ -10,13 +10,13 @@ tag  : Java
 
 ## 使用 synchronized 修饰方法
 
-当我们使用 synchronized 修饰一个**非静态方法**，锁住的是这个方法从属的 object(this) ，即**对象锁**，当该方法执行完毕（即使抛出异常）时，锁就会被释放。
+当我们使用 synchronized 修饰一个**非静态方法**，锁住的是这个方法从属的 object(this), 即**对象锁**，当该方法执行完毕（即使抛出异常）时，锁就会被释放。
 
-当我们使用 synchronized 修饰一个**静态方法**，锁住的是这个方法从属的 class ，即**类锁**，因为静态方法从属的是 class 而不是 object. 类锁与对象锁是不冲突的，锁住了其中一个，不意味着另外一个也锁住了。
+当我们使用 synchronized 修饰一个**静态方法**，锁住的是这个方法从属的 class, 即**类锁**，因为静态方法从属的是 class 而不是 object. 类锁与对象锁是不冲突的，锁住了其中一个，不意味着另外一个也锁住了。
 
 ## 使用 synchronized 修饰代码块
 
-使用 synchronized 修饰代码块时，必须显式指定一个对象来充当 intrinsic lock ，例如下面这段代码：
+使用 synchronized 修饰代码块时，必须显式指定一个对象来充当 intrinsic lock, 例如下面这段代码：
 
 ```java
 public void addName(String name) {
