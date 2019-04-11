@@ -1,5 +1,5 @@
 ---
-title : RxJava 线程切换实现原理
+title : RxJava 线程切换原理
 date  : 2019-04-10
 tag   : RxJava
 ---
@@ -157,7 +157,7 @@ public final class SingleScheduler extends Scheduler {
 }
 ```
 
-同样地，executor 是 corePoolSize 为 1 的 ScheduledThreadPoolExecutor 实例（的引用），只是 scheduleDirect() 被复写为直接把新任务调度到该 executor 上，而不是每次都新建一个，因此满足 single() 定义的单线程调度。我们通常可以在这个调度器上执行**强顺序关系**的任务，例如 Event Loop.
+同样地，executor 是 corePoolSize 为 1 的 ScheduledThreadPoolExecutor 实例（的引用），只是 scheduleDirect() 被复写为直接把新任务调度到该 executor 上，而不是每次都新建一个，因此满足 single() 定义的单线程调度。我们通常可以在这个调度器上执行**强顺序关系**的任务。
 
 ## io()
 
@@ -240,7 +240,7 @@ static final class CachedWorkerPool implements Runnable {
 
 ## AndroidSchedulers.mainThread()
 
-AndroidSchedulers.mainThread() 是 [RxAndroid](https://github.com/ReactiveX/RxAndroid) 提供的用于切换到 Android 主线程（通常是 UI 线程） 的调度器，我们可以在后台线程中执行一些耗时操作，再切换到主线程更新 UI, 例如网络请求。
+AndroidSchedulers.mainThread() 是 [RxAndroid](https://github.com/ReactiveX/RxAndroid) 提供的用于切换到 Android 主线程（通常是 UI 线程） 的调度器，我们可以在后台线程中执行一些耗时操作，再切换到主线程更新 UI.
 
 RxAndroid 的封装非常简单，就是基于 [Handler](https://developer.android.com/reference/android/os/Handler) 的实现：
 
