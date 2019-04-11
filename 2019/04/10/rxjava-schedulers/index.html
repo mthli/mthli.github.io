@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="从开始接触 RxJava 到现在也将近三年了，的确是平时开发中不可或缺的依赖。但最近深感自己对其实现原理缺乏了解，因此有必要学习一番。从 RxJava 最常被使用到的线程切换场景开始，简要分析 newThread(), single(), io() 这三个我最经常使用到的调度器 (Scheduler) 是如何实现的，最后再简单介绍一下 AndroidSchedulers.mainThread()">
+<meta name="keywords" content="RxJava">
+<meta property="og:type" content="article">
+<meta property="og:title" content="RxJava 线程切换实现原理">
+<meta property="og:url" content="https://mthli.github.io/2019/04/10/rxjava-schedulers/index.html">
+<meta property="og:site_name" content="亮哥大杂烩">
+<meta property="og:description" content="从开始接触 RxJava 到现在也将近三年了，的确是平时开发中不可或缺的依赖。但最近深感自己对其实现原理缺乏了解，因此有必要学习一番。从 RxJava 最常被使用到的线程切换场景开始，简要分析 newThread(), single(), io() 这三个我最经常使用到的调度器 (Scheduler) 是如何实现的，最后再简单介绍一下 AndroidSchedulers.mainThread()">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-04-11T10:41:41.429Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="RxJava 线程切换实现原理">
+<meta name="twitter:description" content="从开始接触 RxJava 到现在也将近三年了，的确是平时开发中不可或缺的依赖。但最近深感自己对其实现原理缺乏了解，因此有必要学习一番。从 RxJava 最常被使用到的线程切换场景开始，简要分析 newThread(), single(), io() 这三个我最经常使用到的调度器 (Scheduler) 是如何实现的，最后再简单介绍一下 AndroidSchedulers.mainThread()">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="https://www.gravatar.com/avatar/06601def6c7ee3967ea0cfcf9cd8b970?s=16">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="https://www.gravatar.com/avatar/06601def6c7ee3967ea0cfcf9cd8b970?s=192" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="https://www.gravatar.com/avatar/06601def6c7ee3967ea0cfcf9cd8b970?s=180">
+          
+        
+    
+    <!-- title -->
+    <title>RxJava 线程切换实现原理</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- persian styles -->
+    
+      <link rel="stylesheet" href="/css/rtl.css">
+    
+    <!-- rss -->
+    
+    
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Articles</a></li>
+         
+          <li><a href="https://github.com/mthli">GitHub</a></li>
+         
+          <li><a href="https://twitter.com/mth_li">Twitter</a></li>
+         
+          <li><a href="https://instagram.com/mth_li">Ins</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" href="/2019/02/20/java-synchronized/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share this post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=https://mthli.github.io/2019/04/10/rxjava-schedulers/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=https://mthli.github.io/2019/04/10/rxjava-schedulers/&text=RxJava 线程切换实现原理"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=https://mthli.github.io/2019/04/10/rxjava-schedulers/&title=RxJava 线程切换实现原理"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https://mthli.github.io/2019/04/10/rxjava-schedulers/&is_video=false&description=RxJava 线程切换实现原理"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=RxJava 线程切换实现原理&body=Check out this article: https://mthli.github.io/2019/04/10/rxjava-schedulers/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=https://mthli.github.io/2019/04/10/rxjava-schedulers/&title=RxJava 线程切换实现原理"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=https://mthli.github.io/2019/04/10/rxjava-schedulers/&title=RxJava 线程切换实现原理"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=https://mthli.github.io/2019/04/10/rxjava-schedulers/&title=RxJava 线程切换实现原理"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=https://mthli.github.io/2019/04/10/rxjava-schedulers/&title=RxJava 线程切换实现原理"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=https://mthli.github.io/2019/04/10/rxjava-schedulers/&name=RxJava 线程切换实现原理&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Scheduler"><span class="toc-number">1.</span> <span class="toc-text">Scheduler</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#newThread"><span class="toc-number">2.</span> <span class="toc-text">newThread()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#single"><span class="toc-number">3.</span> <span class="toc-text">single()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#io"><span class="toc-number">4.</span> <span class="toc-text">io()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AndroidSchedulers-mainThread"><span class="toc-number">5.</span> <span class="toc-text">AndroidSchedulers.mainThread()</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index my4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        RxJava 线程切换实现原理
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">亮哥大杂烩</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2019-04-09T16:00:00.000Z" itemprop="datePublished">2019.04.10</time>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link" href="/tags/RxJava/">RxJava</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p>从开始接触 <a href="https://github.com/ReactiveX/RxJava" target="_blank" rel="noopener">RxJava</a> 到现在也将近三年了，的确是平时开发中不可或缺的依赖。但最近深感自己对其实现原理缺乏了解，因此有必要学习一番。从 RxJava 最常被使用到的线程切换场景开始，简要分析 newThread(), single(), io() 这三个我最经常使用到的调度器 (Scheduler) 是如何实现的，最后再简单介绍一下 AndroidSchedulers.mainThread() 是如何实现的。</p>
+<h2 id="Scheduler"><a href="#Scheduler" class="headerlink" title="Scheduler"></a>Scheduler</h2><p><a href="http://reactivex.io/RxJava/javadoc/io/reactivex/Scheduler.html" target="_blank" rel="noopener">Scheduler</a> 是所有调度器实现的抽象父类，子类可以通过复写其 scheduleDirect() 来自行决定如何调度被分配到的任务；其实还有个 schedulePeriodicallyDirect() 方法，但大同小异；同时通过复写其 createWorker() 返回的 Scheduler.Worker 实例来执行具体的某个任务。此处的任务指的是通过 Runnable 封装的可执行代码块。</p>
+<p>对于 Scheduler.scheduleDirect() 而言，默认的实现代码如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">abstract</span> <span class="class"><span class="keyword">class</span> <span class="title">Scheduler</span> </span>&#123;</span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    <span class="meta">@NonNull</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Disposable <span class="title">scheduleDirect</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">            @NonNull Runnable run, <span class="keyword">long</span> delay, @NonNull TimeUnit unit)</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 每次调度都新建一个 Worker</span></span><br><span class="line">        <span class="keyword">final</span> Worker w = createWorker();</span><br><span class="line"></span><br><span class="line">        <span class="keyword">final</span> Runnable decoratedRun = RxJavaPlugins.onSchedule(run);</span><br><span class="line">        DisposeTask task = <span class="keyword">new</span> DisposeTask(decoratedRun, w);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 将任务提交给 Worker 执行</span></span><br><span class="line">        w.schedule(task, delay, unit);</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> task;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p><a href="http://reactivex.io/RxJava/javadoc/io/reactivex/Scheduler.Worker.html" target="_blank" rel="noopener">Scheduler.Worker</a> 本质上与 JDK 原生提供的 <a href="https://docs.oracle.com/javase/7/docs/api/java/util/concurrent/Executor.html" target="_blank" rel="noopener">Executor</a> 做的是类似的事，子类可以通过复写其 schedule() 方法决定如何执行对应的任务。在下文中我们可以看到，实际上 RxJava 的线程切换也正是基于 Executor 等 JDK 提供的多线程 API 实现的。</p>
+<h2 id="newThread"><a href="#newThread" class="headerlink" title="newThread()"></a>newThread()</h2><p><a href="http://reactivex.io/RxJava/2.x/javadoc/io/reactivex/schedulers/Schedulers.html#newThread--" target="_blank" rel="noopener">newThread()</a> 是上述几个调度器中最简单的实现，对于每一个分配到该调度器上的任务，都会新开启一个线程来执行，因此频繁使用可能会导致 OOM. 对应的调度器实现为 NewThreadScheduler, 它<strong>并没有</strong>复写 scheduleDirect() 的默认实现, 而仅仅是复写了 createWorker() 返回 NewThreadWorker:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">NewThreadScheduler</span> <span class="keyword">extends</span> <span class="title">Scheduler</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> ThreadFactory threadFactory;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">NewThreadScheduler</span><span class="params">(ThreadFactory threadFactory)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">this</span>.threadFactory = threadFactory;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@NonNull</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Worker <span class="title">createWorker</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> NewThreadWorker(threadFactory);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们可以通过 NewThreadWorker 来简单了解一下一个 Scheduler.Worker 是如何实现的：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">NewThreadWorker</span> <span class="keyword">extends</span> <span class="title">Scheduler</span>.<span class="title">Worker</span> <span class="keyword">implements</span> <span class="title">Disposable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ScheduledExecutorService executor;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="title">NewThreadWorker</span><span class="params">(ThreadFactory threadFactory)</span> </span>&#123;</span><br><span class="line">        <span class="comment">// 每次都新建一个</span></span><br><span class="line">        executor = SchedulerPoolFactory.create(threadFactory);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@NonNull</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Disposable <span class="title">schedule</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">            @NonNull <span class="keyword">final</span> Runnable action, <span class="keyword">long</span> delayTime, @NonNull TimeUnit unit)</span> </span>&#123;</span><br><span class="line">        ...</span><br><span class="line">        <span class="keyword">return</span> scheduleActual(action, delayTime, unit, <span class="keyword">null</span>);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@NonNull</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> ScheduledRunnable <span class="title">scheduleActual</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">            <span class="keyword">final</span> Runnable run, <span class="keyword">long</span> delayTime,</span></span></span><br><span class="line"><span class="function"><span class="params">            @NonNull TimeUnit unit, @Nullable DisposableContainer parent)</span> </span>&#123;</span><br><span class="line">        Runnable decoratedRun = RxJavaPlugins.onSchedule(run);</span><br><span class="line">        ScheduledRunnable sr = <span class="keyword">new</span> ScheduledRunnable(decoratedRun, parent);</span><br><span class="line"></span><br><span class="line">        ...</span><br><span class="line"></span><br><span class="line">        Future&lt;?&gt; f;</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            <span class="keyword">if</span> (delayTime &lt;= <span class="number">0</span>) &#123;</span><br><span class="line">                <span class="comment">// 直接提交</span></span><br><span class="line">                f = executor.submit((Callable&lt;Object&gt;) sr);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// 延迟调度</span></span><br><span class="line">                f = executor.schedule((Callable&lt;Object&gt;) sr, delayTime, unit);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            ...</span><br><span class="line">        &#125; <span class="keyword">catch</span> (RejectedExecutionException ex) &#123;</span><br><span class="line">            ...</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> sr;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>上述代码中，executor 实际上是 corePoolSize 为 1 的 <a href="https://docs.oracle.com/javase/8/docs/api/java/util/concurrent/ScheduledThreadPoolExecutor.html" target="_blank" rel="noopener">ScheduledThreadPoolExecutor</a> 实例。通过阅读 JDK 文档我们知道，该 executor 至多只会有 1 个线程在执行：</p>
+<blockquote>
+<p>While this class inherits from ThreadPoolExecutor, a few of the inherited tuning methods are not useful for it. In particular, because it acts as a fixed-sized pool using corePoolSize threads and an unbounded queue, adjustments to maximumPoolSize have no useful effect.</p>
+</blockquote>
+<p>综合上文我们知道，由于 newThread() 没有复写 scheduleDirect(), 所以每次都会新建一个 NewThreadWorker, 继而每次都会创建一个容量为 1 的线程池，在这个线程池中执行新任务。所以的确是「每一个分配到该调度器上的任务，都会新开启一个线程来执行」啊。</p>
+<h2 id="single"><a href="#single" class="headerlink" title="single()"></a>single()</h2><p>了解了 newThread() 是如何实现线程切换之后，再来看 <a href="http://reactivex.io/RxJava/2.x/javadoc/io/reactivex/schedulers/Schedulers.html#single--" target="_blank" rel="noopener">single()</a> 对应的实现就很简单了：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">SingleScheduler</span> <span class="keyword">extends</span> <span class="title">Scheduler</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> AtomicReference&lt;ScheduledExecutorService&gt; executor</span><br><span class="line">        = <span class="keyword">new</span> AtomicReference&lt;ScheduledExecutorService&gt;();</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    <span class="meta">@NonNull</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Worker <span class="title">createWorker</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> ScheduledWorker(executor.get());</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@NonNull</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Disposable <span class="title">scheduleDirect</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">            @NonNull Runnable run, <span class="keyword">long</span> delay, TimeUnit unit)</span> </span>&#123;</span><br><span class="line">        ScheduledDirectTask task</span><br><span class="line">            = <span class="keyword">new</span> ScheduledDirectTask(RxJavaPlugins.onSchedule(run));</span><br><span class="line">        <span class="keyword">try</span> &#123;</span><br><span class="line">            Future&lt;?&gt; f;</span><br><span class="line">            <span class="keyword">if</span> (delay &lt;= <span class="number">0L</span>) &#123;</span><br><span class="line">                <span class="comment">// 直接提交</span></span><br><span class="line">                f = executor.get().submit(task);</span><br><span class="line">            &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">                <span class="comment">// 延时调度</span></span><br><span class="line">                f = executor.get().schedule(task, delay, unit);</span><br><span class="line">            &#125;</span><br><span class="line"></span><br><span class="line">            task.setFuture(f);</span><br><span class="line">            <span class="keyword">return</span> task;</span><br><span class="line">        &#125; <span class="keyword">catch</span> (RejectedExecutionException ex) &#123;</span><br><span class="line">            RxJavaPlugins.onError(ex);</span><br><span class="line">            <span class="keyword">return</span> EmptyDisposable.INSTANCE;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>同样地，executor 是 corePoolSize 为 1 的 ScheduledThreadPoolExecutor 实例（的引用），只是 scheduleDirect() 被复写为直接把新任务调度到该 executor 上，而不是每次都新建一个，因此满足 single() 定义的单线程调度。我们通常可以在这个调度器上执行<strong>强顺序关系</strong>的任务，例如 Event Loop.</p>
+<h2 id="io"><a href="#io" class="headerlink" title="io()"></a>io()</h2><p><a href="http://reactivex.io/RxJava/2.x/javadoc/io/reactivex/schedulers/Schedulers.html#io--" target="_blank" rel="noopener">io()</a> 不像 newThread() 那样每次都会新建一个线程，相反地，如果有空闲线程，新任务就会被调度到这个空闲线程上；只有线程不够时，才会扩容。通常大多数异步操作，如网络请求，都可以切换到这个调度器上。</p>
+<p>然而你会发现，io() 和 newThread() 一样，并没有复写 scheduleDirect(), 每次调度时，io() 都会新建一个 EventLoopWorker 实例：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">IoScheduler</span> <span class="keyword">extends</span> <span class="title">Scheduler</span> </span>&#123;</span><br><span class="line">    <span class="keyword">final</span> AtomicReference&lt;CachedWorkerPool&gt; pool;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    <span class="meta">@NonNull</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Worker <span class="title">createWorker</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> EventLoopWorker(pool.get());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>对应的 EventLoopWorker 实现如下：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">EventLoopWorker</span> <span class="keyword">extends</span> <span class="title">Scheduler</span>.<span class="title">Worker</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ThreadWorker threadWorker;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    EventLoopWorker(CachedWorkerPool pool) &#123;</span><br><span class="line">        ...</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 这一句是关键</span></span><br><span class="line">        <span class="keyword">this</span>.threadWorker = pool.get();</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@NonNull</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Disposable <span class="title">schedule</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">            @NonNull Runnable action, <span class="keyword">long</span> delayTime, @NonNull TimeUnit unit)</span> </span>&#123;</span><br><span class="line">        ...</span><br><span class="line"></span><br><span class="line">        <span class="comment">// ThreadWorker 是 NewThreadWorker 的子类，</span></span><br><span class="line">        <span class="comment">// 其 scheduleActual() 就是 NewThreadWorker 的 scheduleActual()</span></span><br><span class="line">        <span class="keyword">return</span> threadWorker.scheduleActual(action, delayTime, unit, tasks);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>然后你又会发现，EventLoopWorker 的大体逻辑和 NewThreadWorker 差不多，所以它是怎么实现复用和扩容的呢？其实奥义就在 CachedWorkerPool 这个类：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">CachedWorkerPool</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> ConcurrentLinkedQueue&lt;ThreadWorker&gt; expiringWorkerQueue;</span><br><span class="line">    <span class="keyword">final</span> CompositeDisposable allWorkers;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    <span class="comment">// 返回一个可以被复用的 Worker, 或一个新的 Worker</span></span><br><span class="line">    <span class="function">ThreadWorker <span class="title">get</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        ...</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 如果有空闲 Worker 则使用之</span></span><br><span class="line">        <span class="keyword">while</span> (!expiringWorkerQueue.isEmpty()) &#123;</span><br><span class="line">            ThreadWorker threadWorker = expiringWorkerQueue.poll();</span><br><span class="line">            <span class="keyword">if</span> (threadWorker != <span class="keyword">null</span>) &#123;</span><br><span class="line">                <span class="keyword">return</span> threadWorker;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// No cached worker found, so create a new one.</span></span><br><span class="line">        ThreadWorker w = <span class="keyword">new</span> ThreadWorker(threadFactory);</span><br><span class="line">        allWorkers.add(w);</span><br><span class="line">        <span class="keyword">return</span> w;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们可以向上回顾一下 EventLoopWorker 的构造方法，每次 pool.get() 都会返回一个可以被复用的 Worker, 或一个新的 Worker, 从而实现了复用和扩容的逻辑。</p>
+<h2 id="AndroidSchedulers-mainThread"><a href="#AndroidSchedulers-mainThread" class="headerlink" title="AndroidSchedulers.mainThread()"></a>AndroidSchedulers.mainThread()</h2><p>AndroidSchedulers.mainThread() 是 <a href="https://github.com/ReactiveX/RxAndroid" target="_blank" rel="noopener">RxAndroid</a> 提供的用于切换到 Android 主线程（通常是 UI 线程） 的调度器，我们可以在后台线程中执行一些耗时操作，再切换到主线程更新 UI, 例如网络请求。</p>
+<p>RxAndroid 的封装非常简单，就是基于 <a href="https://developer.android.com/reference/android/os/Handler" target="_blank" rel="noopener">Handler</a> 的实现：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">HandlerScheduler</span> <span class="keyword">extends</span> <span class="title">Scheduler</span> </span>&#123;</span><br><span class="line">    <span class="comment">// handler 是与 Looper.getMainLooper() 绑定的 Handler 实例</span></span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Handler handler;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">boolean</span> async;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Disposable <span class="title">scheduleDirect</span><span class="params">(Runnable run, <span class="keyword">long</span> delay, TimeUnit unit)</span> </span>&#123;</span><br><span class="line">        ...</span><br><span class="line"></span><br><span class="line">        run = RxJavaPlugins.onSchedule(run);</span><br><span class="line">        ScheduledRunnable scheduled = <span class="keyword">new</span> ScheduledRunnable(handler, run);</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 延时调度</span></span><br><span class="line">        handler.postDelayed(scheduled, unit.toMillis(delay));</span><br><span class="line"></span><br><span class="line">        <span class="keyword">return</span> scheduled;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> Worker <span class="title">createWorker</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="keyword">new</span> HandlerWorker(handler, async);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>同样地，我们再来看看 HandlerWorker, 也是基于 Handler 实现的：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> <span class="class"><span class="keyword">class</span> <span class="title">HandlerWorker</span> <span class="keyword">extends</span> <span class="title">Worker</span> </span>&#123;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> Handler handler;</span><br><span class="line">    <span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">boolean</span> async;</span><br><span class="line"></span><br><span class="line">    ...</span><br><span class="line"></span><br><span class="line">    <span class="comment">// Async will only be true when the API is available to call.</span></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="meta">@SuppressLint</span>(<span class="string">"NewApi"</span>)</span><br><span class="line">    <span class="function"><span class="keyword">public</span> Disposable <span class="title">schedule</span><span class="params">(Runnable run, <span class="keyword">long</span> delay, TimeUnit unit)</span> </span>&#123;</span><br><span class="line">        ...</span><br><span class="line"></span><br><span class="line">        ScheduledRunnable scheduled = <span class="keyword">new</span> ScheduledRunnable(handler, run);</span><br><span class="line">        Message message = Message.obtain(handler, scheduled);</span><br><span class="line">        <span class="comment">// Used as token for batch disposal of this worker's runnables.</span></span><br><span class="line">        message.obj = <span class="keyword">this</span>;</span><br><span class="line"></span><br><span class="line">        <span class="keyword">if</span> (async) &#123;</span><br><span class="line">            message.setAsynchronous(<span class="keyword">true</span>);</span><br><span class="line">        &#125;</span><br><span class="line"></span><br><span class="line">        <span class="comment">// 延迟调度</span></span><br><span class="line">        handler.sendMessageDelayed(message, unit.toMillis(delay));</span><br><span class="line"></span><br><span class="line">        ...</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>注意，上述代码中有一个 async 变量，设置为 true 时可以提升 UI 性能（如果你需要频繁调度到 Android 主线程的话），具体可以参见这篇文章 <a href="https://medium.com/@ZacSweers/rxandroids-new-async-api-4ab5b3ad3e93" target="_blank" rel="noopener">RxAndroid’s New Async API</a>.</p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    <!--
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Articles</a></li>
+         
+          <li><a href="https://github.com/mthli">GitHub</a></li>
+         
+          <li><a href="https://twitter.com/mth_li">Twitter</a></li>
+         
+          <li><a href="https://instagram.com/mth_li">Ins</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Scheduler"><span class="toc-number">1.</span> <span class="toc-text">Scheduler</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#newThread"><span class="toc-number">2.</span> <span class="toc-text">newThread()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#single"><span class="toc-number">3.</span> <span class="toc-text">single()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#io"><span class="toc-number">4.</span> <span class="toc-text">io()</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#AndroidSchedulers-mainThread"><span class="toc-number">5.</span> <span class="toc-text">AndroidSchedulers.mainThread()</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=https://mthli.github.io/2019/04/10/rxjava-schedulers/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=https://mthli.github.io/2019/04/10/rxjava-schedulers/&text=RxJava 线程切换实现原理"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=https://mthli.github.io/2019/04/10/rxjava-schedulers/&title=RxJava 线程切换实现原理"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https://mthli.github.io/2019/04/10/rxjava-schedulers/&is_video=false&description=RxJava 线程切换实现原理"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=RxJava 线程切换实现原理&body=Check out this article: https://mthli.github.io/2019/04/10/rxjava-schedulers/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=https://mthli.github.io/2019/04/10/rxjava-schedulers/&title=RxJava 线程切换实现原理"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=https://mthli.github.io/2019/04/10/rxjava-schedulers/&title=RxJava 线程切换实现原理"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=https://mthli.github.io/2019/04/10/rxjava-schedulers/&title=RxJava 线程切换实现原理"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=https://mthli.github.io/2019/04/10/rxjava-schedulers/&title=RxJava 线程切换实现原理"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=https://mthli.github.io/2019/04/10/rxjava-schedulers/&name=RxJava 线程切换实现原理&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+    
+    -->
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2019 Matthew Lee
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Articles</a></li>
+         
+          <li><a href="https://github.com/mthli">GitHub</a></li>
+         
+          <li><a href="https://twitter.com/mth_li">Twitter</a></li>
+         
+          <li><a href="https://instagram.com/mth_li">Ins</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+<link rel="stylesheet" href="/lib/justified-gallery/css/justifiedGallery.min.css">
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/js/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'mthli';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+

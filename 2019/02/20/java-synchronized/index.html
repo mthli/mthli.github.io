@@ -14,7 +14,7 @@
 <meta property="og:site_name" content="亮哥大杂烩">
 <meta property="og:description" content="关于 synchronized 关键字 Oracle 官方有一篇简洁易懂的文档，以下是我简单的整理。 首先我们需要知道的是，Java 中任意的 class（类）或 object（对象）都有一个内建的锁，称为 intrinsic lock 或 monitor lock. 这个锁你可以理解为是官方方便大家才内建的，如果没有这个内建的锁，你自己创建一个自定义的锁也可以达到同样的效果，只是比较繁琐罢了。">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2019-04-08T10:21:33.484Z">
+<meta property="og:updated_time" content="2019-04-10T13:58:48.343Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="对 Java synchronized 关键字的理解">
 <meta name="twitter:description" content="关于 synchronized 关键字 Oracle 官方有一篇简洁易懂的文档，以下是我简单的整理。 首先我们需要知道的是，Java 中任意的 class（类）或 object（对象）都有一个内建的锁，称为 intrinsic lock 或 monitor lock. 这个锁你可以理解为是官方方便大家才内建的，如果没有这个内建的锁，你自己创建一个自定义的锁也可以达到同样的效果，只是比较繁琐罢了。">
@@ -74,6 +74,8 @@
     <br/>
     <span id="actions">
       <ul>
+        
+        <li><a class="icon" href="/2019/04/10/rxjava-schedulers/"><i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i></a></li>
         
         
         <li><a class="icon" href="/2018/10/02/kotlin-higher-order-functions/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
@@ -144,9 +146,9 @@
   <div class="content" itemprop="articleBody">
     <p>关于 synchronized 关键字 Oracle 官方有<a href="https://docs.oracle.com/javase/tutorial/essential/concurrency/locksync.html" target="_blank" rel="noopener">一篇简洁易懂的文档</a>，以下是我简单的整理。</p>
 <p>首先我们需要知道的是，Java 中任意的 class（类）或 object（对象）都有一个内建的锁，称为 intrinsic lock 或 monitor lock. 这个锁你可以理解为是官方方便大家才内建的，如果没有这个内建的锁，你自己创建一个自定义的锁也可以达到同样的效果，只是比较繁琐罢了。</p>
-<h2 id="使用-synchronized-修饰方法"><a href="#使用-synchronized-修饰方法" class="headerlink" title="使用 synchronized 修饰方法"></a>使用 synchronized 修饰方法</h2><p>当我们使用 synchronized 修饰一个<strong>非静态方法</strong>，锁住的是这个方法从属的 object(this) ，即<strong>对象锁</strong>，当该方法执行完毕（即使抛出异常）时，锁就会被释放。</p>
-<p>当我们使用 synchronized 修饰一个<strong>静态方法</strong>，锁住的是这个方法从属的 class ，即<strong>类锁</strong>，因为静态方法从属的是 class 而不是 object. 类锁与对象锁是不冲突的，锁住了其中一个，不意味着另外一个也锁住了。</p>
-<h2 id="使用-synchronized-修饰代码块"><a href="#使用-synchronized-修饰代码块" class="headerlink" title="使用 synchronized 修饰代码块"></a>使用 synchronized 修饰代码块</h2><p>使用 synchronized 修饰代码块时，必须显式指定一个对象来充当 intrinsic lock ，例如下面这段代码：</p>
+<h2 id="使用-synchronized-修饰方法"><a href="#使用-synchronized-修饰方法" class="headerlink" title="使用 synchronized 修饰方法"></a>使用 synchronized 修饰方法</h2><p>当我们使用 synchronized 修饰一个<strong>非静态方法</strong>，锁住的是这个方法从属的 object(this), 即<strong>对象锁</strong>，当该方法执行完毕（即使抛出异常）时，锁就会被释放。</p>
+<p>当我们使用 synchronized 修饰一个<strong>静态方法</strong>，锁住的是这个方法从属的 class, 即<strong>类锁</strong>，因为静态方法从属的是 class 而不是 object. 类锁与对象锁是不冲突的，锁住了其中一个，不意味着另外一个也锁住了。</p>
+<h2 id="使用-synchronized-修饰代码块"><a href="#使用-synchronized-修饰代码块" class="headerlink" title="使用 synchronized 修饰代码块"></a>使用 synchronized 修饰代码块</h2><p>使用 synchronized 修饰代码块时，必须显式指定一个对象来充当 intrinsic lock, 例如下面这段代码：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">addName</span><span class="params">(String name)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">synchronized</span>(<span class="keyword">this</span>) &#123;</span><br><span class="line">        lastName = name;</span><br><span class="line">        nameCount++;</span><br><span class="line">    &#125;</span><br><span class="line">    nameList.add(name);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 <p>在上述代码中，addName 需要同步地改变 laseName 和 nameCount, 但是需要同步地调用其他对象的方法，同步地调用其他对象的方法可能会导致<a href="https://docs.oracle.com/javase/tutorial/essential/concurrency/deadlock.html" target="_blank" rel="noopener">死锁</a>等问题。如果没有同步代码块，开发者就得自己实现一个单独的、非同步的方法来调用 nameList.add.</p>
 <p>使用 synchronized 修饰代码块同时可以提升并发的性能。举个例子：</p>

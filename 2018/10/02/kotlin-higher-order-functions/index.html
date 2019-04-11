@@ -6,18 +6,18 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="HandheldFriendly" content="True">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-    <meta name="description" content="首先我们要明确，Kotlin functions are first-class ，这句话是什么意思呢？ 知乎上一个比较好的回答是：  函数是第一类对象，第一类值或对象要满足下列特征：  可以被存放在变量和数据结构中 可以当做参数传递给子过程 可以当子过程的返回值 可以在运行期间被创建  一个对象（广义概念上）在运行期间被创建，可以当做一个参数被传递，从子函数返回或者可以被赋给一个变量。熟悉了这个">
+    <meta name="description" content="首先我们要明确，Kotlin functions are first-class, 这句话是什么意思呢？ 知乎上一个比较好的回答是：  函数是第一类对象，第一类值或对象要满足下列特征：  可以被存放在变量和数据结构中 可以当做参数传递给子过程 可以当子过程的返回值 可以在运行期间被创建  一个对象（广义概念上）在运行期间被创建，可以当做一个参数被传递，从子函数返回或者可以被赋给一个变量。熟悉了这个">
 <meta name="keywords" content="Kotlin">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Kotlin 中的高阶函数">
 <meta property="og:url" content="https://mthli.github.io/2018/10/02/kotlin-higher-order-functions/index.html">
 <meta property="og:site_name" content="亮哥大杂烩">
-<meta property="og:description" content="首先我们要明确，Kotlin functions are first-class ，这句话是什么意思呢？ 知乎上一个比较好的回答是：  函数是第一类对象，第一类值或对象要满足下列特征：  可以被存放在变量和数据结构中 可以当做参数传递给子过程 可以当子过程的返回值 可以在运行期间被创建  一个对象（广义概念上）在运行期间被创建，可以当做一个参数被传递，从子函数返回或者可以被赋给一个变量。熟悉了这个">
+<meta property="og:description" content="首先我们要明确，Kotlin functions are first-class, 这句话是什么意思呢？ 知乎上一个比较好的回答是：  函数是第一类对象，第一类值或对象要满足下列特征：  可以被存放在变量和数据结构中 可以当做参数传递给子过程 可以当子过程的返回值 可以在运行期间被创建  一个对象（广义概念上）在运行期间被创建，可以当做一个参数被传递，从子函数返回或者可以被赋给一个变量。熟悉了这个">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2019-04-08T10:21:50.696Z">
+<meta property="og:updated_time" content="2019-04-10T13:57:59.488Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Kotlin 中的高阶函数">
-<meta name="twitter:description" content="首先我们要明确，Kotlin functions are first-class ，这句话是什么意思呢？ 知乎上一个比较好的回答是：  函数是第一类对象，第一类值或对象要满足下列特征：  可以被存放在变量和数据结构中 可以当做参数传递给子过程 可以当子过程的返回值 可以在运行期间被创建  一个对象（广义概念上）在运行期间被创建，可以当做一个参数被传递，从子函数返回或者可以被赋给一个变量。熟悉了这个">
+<meta name="twitter:description" content="首先我们要明确，Kotlin functions are first-class, 这句话是什么意思呢？ 知乎上一个比较好的回答是：  函数是第一类对象，第一类值或对象要满足下列特征：  可以被存放在变量和数据结构中 可以当做参数传递给子过程 可以当子过程的返回值 可以在运行期间被创建  一个对象（广义概念上）在运行期间被创建，可以当做一个参数被传递，从子函数返回或者可以被赋给一个变量。熟悉了这个">
     
     
         
@@ -144,7 +144,7 @@
   
 
   <div class="content" itemprop="articleBody">
-    <p>首先我们要明确，Kotlin functions are <a href="https://en.wikipedia.org/wiki/First-class_function" target="_blank" rel="noopener">first-class</a> ，这句话是什么意思呢？</p>
+    <p>首先我们要明确，Kotlin functions are <a href="https://en.wikipedia.org/wiki/First-class_function" target="_blank" rel="noopener">first-class</a>, 这句话是什么意思呢？</p>
 <p><a href="https://www.zhihu.com/question/19959217/answer/13482599" target="_blank" rel="noopener">知乎上一个比较好的回答是</a>：</p>
 <blockquote>
 <p>函数是第一类对象，第一类值或对象要满足下列特征：</p>
@@ -165,7 +165,7 @@
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">this</span>.y(x) = <span class="keyword">this</span>.f(<span class="keyword">this</span>.g(x));</span><br></pre></td></tr></table></figure>
 <p>但是如果它们分布在不同的类中，你在调用方法时就会显示地观察到，你的方法是依附于类而存在的，你得先调用类，才能调用到方法：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">C.y(x) = A.f(B.g(x));</span><br></pre></td></tr></table></figure>
-<p>如果你要定义很多 y(x)=f(g(x)) 这样的方法，或者更复杂的组合方法，你会发现如果能直接操作函数是多么方便的一件事。如果你从 Java 7 开始就使用 RxJava ，你一定每次调用操作符，都要 new 一个匿名内部类；当然到 Java 8 支持 Lambda 表达式以后看起来简单很多，而 Lambda 表达式也正是函数作为一等公民带来的好处之一（这里不是说 Java 8 就把函数作为一等公民了哈，而是说 Java 正在部分吸收这一个概念到自己新的语法中，方便开发者而已。</p>
+<p>如果你要定义很多 y(x)=f(g(x)) 这样的方法，或者更复杂的组合方法，你会发现如果能直接操作函数是多么方便的一件事。如果你从 Java 7 开始就使用 RxJava, 你一定每次调用操作符，都要 new 一个匿名内部类；当然到 Java 8 支持 Lambda 表达式以后看起来简单很多，而 Lambda 表达式也正是函数作为一等公民带来的好处之一（这里不是说 Java 8 就把函数作为一等公民了哈，而是说 Java 正在部分吸收这一个概念到自己新的语法中，方便开发者而已。</p>
 <p>当然像 y(x) 这种由多个函数组合而成的新函数，就称为<strong>高阶函数</strong>。</p>
 
   </div>
