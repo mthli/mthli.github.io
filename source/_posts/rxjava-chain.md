@@ -56,7 +56,7 @@ ObservableObserveOn.subscribeActual() { // 最后被执行
     ObservableMap.subscribeActual() { // 第三个被执行
         ObservableFilter.subscribeActual() { // 第二个被执行
             ObservableCreate.subscribeActual() { // 嵌套最深的最先被执行
-                // DO SONTHING
+                // DO SOMETHING
             }
         }
     }
