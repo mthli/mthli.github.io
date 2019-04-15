@@ -6,18 +6,18 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="HandheldFriendly" content="True">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-    <meta name="description" content="RxJava 采用了类似 Stream API 的链式调用设计，提供了 filter(), map(), observeOn() 等大家经常使用的操作符。在本篇文章中，我们来解析一下 RxJava 是如何实现这些链式调用的。 首先列举一个常见的 RxJava 场景： Observable.create(...)        .filter(...)        .map(...)">
+    <meta name="description" content="RxJava 采用了类似 Stream API 的链式调用设计，提供了 filter(), map(), observeOn() 等大家经常使用的操作符。与 Builder 模式对调用方法的顺序没有要求不同，RxJava 的操作符调用需要保持顺序关系。在本篇文章中，我们来解析一下 RxJava 是如何实现这些链式调用的。 首先列举一个常见的 RxJava 场景： Observable.create">
 <meta name="keywords" content="RxJava">
 <meta property="og:type" content="article">
 <meta property="og:title" content="RxJava 链式调用原理">
 <meta property="og:url" content="https://mthli.github.io/2019/04/15/rxjava-chain/index.html">
 <meta property="og:site_name" content="亮哥大杂烩">
-<meta property="og:description" content="RxJava 采用了类似 Stream API 的链式调用设计，提供了 filter(), map(), observeOn() 等大家经常使用的操作符。在本篇文章中，我们来解析一下 RxJava 是如何实现这些链式调用的。 首先列举一个常见的 RxJava 场景： Observable.create(...)        .filter(...)        .map(...)">
+<meta property="og:description" content="RxJava 采用了类似 Stream API 的链式调用设计，提供了 filter(), map(), observeOn() 等大家经常使用的操作符。与 Builder 模式对调用方法的顺序没有要求不同，RxJava 的操作符调用需要保持顺序关系。在本篇文章中，我们来解析一下 RxJava 是如何实现这些链式调用的。 首先列举一个常见的 RxJava 场景： Observable.create">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2019-04-15T13:37:51.495Z">
+<meta property="og:updated_time" content="2019-04-15T13:47:04.743Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="RxJava 链式调用原理">
-<meta name="twitter:description" content="RxJava 采用了类似 Stream API 的链式调用设计，提供了 filter(), map(), observeOn() 等大家经常使用的操作符。在本篇文章中，我们来解析一下 RxJava 是如何实现这些链式调用的。 首先列举一个常见的 RxJava 场景： Observable.create(...)        .filter(...)        .map(...)">
+<meta name="twitter:description" content="RxJava 采用了类似 Stream API 的链式调用设计，提供了 filter(), map(), observeOn() 等大家经常使用的操作符。与 Builder 模式对调用方法的顺序没有要求不同，RxJava 的操作符调用需要保持顺序关系。在本篇文章中，我们来解析一下 RxJava 是如何实现这些链式调用的。 首先列举一个常见的 RxJava 场景： Observable.create">
     
     
         
@@ -142,7 +142,7 @@
   
 
   <div class="content" itemprop="articleBody">
-    <p>RxJava 采用了类似 Stream API 的链式调用设计，提供了 filter(), map(), observeOn() 等大家经常使用的操作符。在本篇文章中，我们来解析一下 RxJava 是如何实现这些链式调用的。</p>
+    <p>RxJava 采用了类似 Stream API 的链式调用设计，提供了 filter(), map(), observeOn() 等大家经常使用的操作符。与 Builder 模式对调用方法的顺序没有要求不同，RxJava 的操作符调用需要保持顺序关系。在本篇文章中，我们来解析一下 RxJava 是如何实现这些链式调用的。</p>
 <p>首先列举一个常见的 RxJava 场景：</p>
 <figure class="highlight java"><table><tr><td class="code"><pre><span class="line">Observable.create(...)</span><br><span class="line">        .filter(...)</span><br><span class="line">        .map(...)</span><br><span class="line">        .observeOn(...)</span><br><span class="line">        .subscribe(...)</span><br></pre></td></tr></table></figure>
 <p>链式调用从 subscribe() 开始被触发，我们来看一下对应的源码：</p>
