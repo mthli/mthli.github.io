@@ -4,7 +4,7 @@ date  : 2019.04.15
 tag   : RxJava
 ---
 
-RxJava 采用了类似 Stream API 的链式调用设计，提供了 filter(), map(), observeOn() 等大家经常使用的操作符。在本篇文章中，我们来解析一下 RxJava 是如何实现这些链式调用的。
+RxJava 采用了类似 Stream API 的链式调用设计，提供了 filter(), map(), observeOn() 等大家经常使用的操作符。与 Builder 模式对调用方法的顺序没有要求不同，RxJava 的操作符调用需要保持顺序关系。在本篇文章中，我们来解析一下 RxJava 是如何实现这些链式调用的。
 
 首先列举一个常见的 RxJava 场景：
 
