@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang=en>
+<head>
+    <!-- so meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="HandheldFriendly" content="True">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+    <meta name="description" content="本文译自 Jake Wharton 的博客 Android’s Java 8 Support. 我虽然在家办公了几年，但人们对 Android 不同 Java 版本的支持问题的吐槽我也有所耳闻。每年的 Google I/O 的提问环节你会发现我也在咨询这个问题；在其他相关的会议中，也会或多或少地提及。显然这也是一个复杂的问题，我们需要明确我们在讨论什么。对 Java 的支持可以有很多维度，例如语法">
+<meta name="keywords" content="Java,Android">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Android 兼容 Java 8 的原理">
+<meta property="og:url" content="https://mthli.github.io/2019/04/16/android-java8-support/index.html">
+<meta property="og:site_name" content="亮哥大杂烩">
+<meta property="og:description" content="本文译自 Jake Wharton 的博客 Android’s Java 8 Support. 我虽然在家办公了几年，但人们对 Android 不同 Java 版本的支持问题的吐槽我也有所耳闻。每年的 Google I/O 的提问环节你会发现我也在咨询这个问题；在其他相关的会议中，也会或多或少地提及。显然这也是一个复杂的问题，我们需要明确我们在讨论什么。对 Java 的支持可以有很多维度，例如语法">
+<meta property="og:locale" content="en">
+<meta property="og:updated_time" content="2019-04-17T15:38:29.572Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Android 兼容 Java 8 的原理">
+<meta name="twitter:description" content="本文译自 Jake Wharton 的博客 Android’s Java 8 Support. 我虽然在家办公了几年，但人们对 Android 不同 Java 版本的支持问题的吐槽我也有所耳闻。每年的 Google I/O 的提问环节你会发现我也在咨询这个问题；在其他相关的会议中，也会或多或少地提及。显然这也是一个复杂的问题，我们需要明确我们在讨论什么。对 Java 的支持可以有很多维度，例如语法">
+    
+    
+        
+          
+              <link rel="shortcut icon" href="https://www.gravatar.com/avatar/06601def6c7ee3967ea0cfcf9cd8b970?s=16">
+          
+        
+        
+          
+            <link rel="icon" type="image/png" href="https://www.gravatar.com/avatar/06601def6c7ee3967ea0cfcf9cd8b970?s=192" sizes="192x192">
+          
+        
+        
+          
+            <link rel="apple-touch-icon" sizes="180x180" href="https://www.gravatar.com/avatar/06601def6c7ee3967ea0cfcf9cd8b970?s=180">
+          
+        
+    
+    <!-- title -->
+    <title>Android 兼容 Java 8 的原理</title>
+    <!-- styles -->
+    <link rel="stylesheet" href="/css/style.css">
+    <!-- persian styles -->
+    
+      <link rel="stylesheet" href="/css/rtl.css">
+    
+    <!-- rss -->
+    
+    
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+    
+      <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Articles</a></li>
+         
+          <li><a href="https://github.com/mthli">GitHub</a></li>
+         
+          <li><a href="https://twitter.com/mth_li">Twitter</a></li>
+         
+          <li><a href="https://instagram.com/mth_li">Ins</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        
+        <li><a class="icon" href="/2019/04/15/rxjava-chain/"><i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i></a></li>
+        
+        <li><a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i></a></li>
+        <li><a class="icon" href="#"><i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i></a></li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share this post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=https://mthli.github.io/2019/04/16/android-java8-support/"><i class="fab fa-facebook " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=https://mthli.github.io/2019/04/16/android-java8-support/&text=Android 兼容 Java 8 的原理"><i class="fab fa-twitter " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=https://mthli.github.io/2019/04/16/android-java8-support/&title=Android 兼容 Java 8 的原理"><i class="fab fa-linkedin " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https://mthli.github.io/2019/04/16/android-java8-support/&is_video=false&description=Android 兼容 Java 8 的原理"><i class="fab fa-pinterest " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Android 兼容 Java 8 的原理&body=Check out this article: https://mthli.github.io/2019/04/16/android-java8-support/"><i class="fas fa-envelope " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=https://mthli.github.io/2019/04/16/android-java8-support/&title=Android 兼容 Java 8 的原理"><i class="fab fa-get-pocket " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=https://mthli.github.io/2019/04/16/android-java8-support/&title=Android 兼容 Java 8 的原理"><i class="fab fa-reddit " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=https://mthli.github.io/2019/04/16/android-java8-support/&title=Android 兼容 Java 8 的原理"><i class="fab fa-stumbleupon " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=https://mthli.github.io/2019/04/16/android-java8-support/&title=Android 兼容 Java 8 的原理"><i class="fab fa-digg " aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=https://mthli.github.io/2019/04/16/android-java8-support/&name=Android 兼容 Java 8 的原理&description="><i class="fab fa-tumblr " aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+    <div id="toc">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Lambda"><span class="toc-number">1.</span> <span class="toc-text">Lambda</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Desugaring-的历史"><span class="toc-number">2.</span> <span class="toc-text">Desugaring 的历史</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#D8"><span class="toc-number">3.</span> <span class="toc-text">D8</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#代码转换"><span class="toc-number">4.</span> <span class="toc-text">代码转换</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#原生的-Lambda"><span class="toc-number">5.</span> <span class="toc-text">原生的 Lambda</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Method-References"><span class="toc-number">6.</span> <span class="toc-text">Method References</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Interface-Methods"><span class="toc-number">7.</span> <span class="toc-text">Interface Methods</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#只使用-Kotlin"><span class="toc-number">8.</span> <span class="toc-text">只使用 Kotlin?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Desugaring-APIs"><span class="toc-number">9.</span> <span class="toc-text">Desugaring APIs</span></a></li></ol>
+    </div>
+  </span>
+</div>
+
+    
+    <div class="content index my4">
+        
+        <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+  <header>
+    
+    <h1 class="posttitle" itemprop="name headline">
+        Android 兼容 Java 8 的原理
+    </h1>
+
+
+
+    <div class="meta">
+      <span class="author" itemprop="author" itemscope itemtype="http://schema.org/Person">
+        <span itemprop="name">亮哥大杂烩</span>
+      </span>
+      
+    <div class="postdate">
+        <time datetime="2019-04-15T16:00:00.000Z" itemprop="datePublished">2019.04.16</time>
+    </div>
+
+
+      
+    <div class="article-tag">
+        <i class="fas fa-tag"></i>
+        <a class="tag-link" href="/tags/Android/">Android</a>, <a class="tag-link" href="/tags/Java/">Java</a>
+    </div>
+
+
+    </div>
+  </header>
+  
+
+  <div class="content" itemprop="articleBody">
+    <p><em>本文译自 Jake Wharton 的博客 <a href="https://jakewharton.com/androids-java-8-support/" target="_blank" rel="noopener">Android’s Java 8 Support</a>.</em></p>
+<p>我虽然在家办公了几年，但人们对 Android 不同 Java 版本的支持问题的吐槽我也有所耳闻。每年的 Google I/O 的提问环节你会发现我也在咨询这个问题；在其他相关的会议中，也会或多或少地提及。显然这也是一个复杂的问题，我们需要明确我们在讨论什么。对 Java 的支持可以有很多维度，例如语法糖、字节码、工具链、新的 API 、新的 JVM 实现等。</p>
+<p>通常大家谈论到 Android 对 Java 8 的支持，都是在说语法糖。所以我们就来看看 Android 的工具链是如何处理 Java 8 的语法糖的。</p>
+<h2 id="Lambda"><a href="#Lambda" class="headerlink" title="Lambda"></a>Lambda</h2><p>Java 8 标志性的语法糖就是加入了 lambda 表达式的支持，相比之前使用匿名类更加简洁清爽：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Java8</span> </span>&#123;</span><br><span class="line">  <span class="class"><span class="keyword">interface</span> <span class="title">Logger</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">log</span><span class="params">(String s)</span></span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String... args)</span> </span>&#123;</span><br><span class="line">    sayHi(s -&gt; System.out.println(s));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">sayHi</span><span class="params">(Logger logger)</span> </span>&#123;</span><br><span class="line">    logger.log(<span class="string">"Hello!"</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>在使用 javac 编译之后，使用 dx 直接运行会报错：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">$ javac *.java</span><br><span class="line"></span><br><span class="line">$ ls</span><br><span class="line">Java8.java Java8.class Java8$Logger.class</span><br><span class="line"></span><br><span class="line">$ $ANDROID_HOME/build-tools/28.0.2/dx --dex --output . *.class</span><br><span class="line">Uncaught translation error: com.android.dx.cf.code.SimException:</span><br><span class="line">  ERROR in Java8.main:([Ljava/lang/String;)V:</span><br><span class="line">    invalid opcode ba - invokedynamic requires --min-sdk-version &gt;= 26</span><br><span class="line">    (currently 13)</span><br><span class="line">1 error; aborting</span><br></pre></td></tr></table></figure>
+<p>这是因为 lambda 的实现使用到了 Java 7 新增加的字节码 invokedynamic. 正如报错信息提示的那样，Android 对这个字节码的支持是在 API 26 以上才实现的 ———— 这竟然有点不可思议。相反地，一个名为 desugaring 的编译流程被用来将 lambda 转换为所以 API 都兼容的形式。</p>
+<h2 id="Desugaring-的历史"><a href="#Desugaring-的历史" class="headerlink" title="Desugaring 的历史"></a>Desugaring 的历史</h2><p>Desugaring 的历史可以说是非常精彩，它的目标始终如一：新的语法糖可以运行在所有设备上。</p>
+<p>最开始，我们使用一款名为 <a href="https://github.com/luontola/retrolambda" target="_blank" rel="noopener">Retrolambda</a> 来实现相关的功能。它使用 JVM 的内建机制，在运行时而不是编译时将 lambda 转换为类的实现。生成新的类很容易增加方法数，但是如果权衡利弊这些成本还是可以接受的 (but work on the tool over time reduced the cost to something reasonable).</p>
+<p>随后 Android 的工具链团队<a href="https://android-developers.googleblog.com/2014/12/hello-world-meet-our-new-experimental.html" target="_blank" rel="noopener">发布了一款新的编译器</a>，称其可以将 Java 8 的语法糖脱糖的同时还兼备更好的性能。这款编译器是基于 Eclipse 的 Java 编译器开发的，但是目标是 Dalvik 字节码而不是 Java 字节码。这个版本的 Java 8 的脱糖实现代价高昂，并且使用率低、性能差，与其他工具链不兼容。</p>
+<p>当上述的新的编译器最终被弃用时（感谢），一款新的将 Java 字节码翻译到 Java 字节码的脱糖转换器<a href="https://android-developers.googleblog.com/2017/04/java-8-language-features-support-update.html" target="_blank" rel="noopener">被集成到了 Android Gradle Plugin 中</a>，它实际上源自 Google 自己的构建工具 Bazel. 其脱糖过程挺高效的，但是性能表现仍然不是很理想。事实上它是一个渐进式的解决方案，不停地在寻找更好的解决方案。</p>
+<p><a href="https://android-developers.googleblog.com/2017/08/next-generation-dex-compiler-now-in.html" target="_blank" rel="noopener">随后 D8 发布了</a>，被用来取代传统的 dx 工具链，承诺在 dex 过程中脱糖而不是使用标准的 Java 字节码做转换。相对于 dx 而言，D8 在性能上取得了巨大的成功，并且带来了更高效的脱糖字节码。从 Android Gradle Plugin 3.1 版本开始，D8 成为了默认的 dex 工具，在 3.2 版本开始负责脱糖。</p>
+<h2 id="D8"><a href="#D8" class="headerlink" title="D8"></a>D8</h2><p>使用 D8 将之前的例子编译为 Dalvik 就成功了：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">$ java -jar d8.jar \</span><br><span class="line">    --lib $ANDROID_HOME/platforms/android-28/android.jar \</span><br><span class="line">    --release \</span><br><span class="line">    --output . \</span><br><span class="line">    *.class</span><br><span class="line"></span><br><span class="line">$ ls</span><br><span class="line">Java8.java Java8.class Java8$Logger.class classes.dex</span><br></pre></td></tr></table></figure>
+<p>我们可以使用 Android SDK 中提供的 dexdump 来看看 D8 是如何将 lambda 脱糖的。这个工具真的会输出很多玩意儿，但我们只看相关的内容：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">$ $ANDROID_HOME/build-tools/28.0.2/dexdump -d classes.dex</span><br><span class="line">[0002d8] Java8.main:([Ljava/lang/String;)V</span><br><span class="line">0000: sget-object v0, LJava8$1;.INSTANCE:LJava8$1;</span><br><span class="line">0002: invoke-static &#123;v0&#125;, LJava8;.sayHi:(LJava8$Logger;)V</span><br><span class="line">0005: return-void</span><br><span class="line"></span><br><span class="line">[0002a8] Java8.sayHi:(LJava8$Logger;)V</span><br><span class="line">0000: const-string v0, &quot;Hello&quot;</span><br><span class="line">0002: invoke-interface &#123;v1, v0&#125;, LJava8$Logger;.log:(Ljava/lang/String;)V</span><br><span class="line">0005: return-void</span><br><span class="line">…</span><br></pre></td></tr></table></figure>
+<p>如果你之前不了解字节码（不论是 Dalvik 还是其他什么的）你也不用担心 ———— 大多数都很容易被理解。</p>
+<p>在第一个代码块中，我们的 main 方法，在名为 Java8$1 的类中，字节序 0000 返回了一个静态的 INSTANCE 引用。考虑到源码中并没有包含名为 Java8$1 的类，我们可以推断这是一个脱糖过程中生成的类。main 方法的字节码中也没有包含任何 lambda 的痕迹，所以一定是在 Java8$1 中干了些什么。</p>
+<p>字节序 0002 接着调用到了 sayHi 和 INSTANCE. sayHi 需要一个 Java8$Logger 参数，看起来 Java8$1 实现了相关的接口。我们同样可以在 D8 的输出中进行验证：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">Class #2            -</span><br><span class="line">  Class descriptor  : &apos;LJava8$1;&apos;</span><br><span class="line">  Access flags      : 0x1011 (PUBLIC FINAL SYNTHETIC)</span><br><span class="line">  Superclass        : &apos;Ljava/lang/Object;&apos;</span><br><span class="line">  Interfaces        -</span><br><span class="line">    #0              : &apos;LJava8$Logger;&apos;</span><br></pre></td></tr></table></figure>
+<p>SYNTHETIC 标志着相关的类是被生成的；并且在 Interfaces 也包含了 Java8$Logger.</p>
+<p>于是 Java8$1 现在就代表了 lambda. 如果你去查看它的 log 方法的实现，你可能会期望发现缺失的 lambda 代码块：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">…</span><br><span class="line">[00026c] Java8$1.log:(Ljava/lang/String;)V</span><br><span class="line">0000: invoke-static &#123;v1&#125;, LJava8;.lambda$main$0:(Ljava/lang/String;)V</span><br><span class="line">0003: return-void</span><br><span class="line">…</span><br></pre></td></tr></table></figure>
+<p>可是什么都没有哦。相反地，它调用了 Java8 这个类中的名为 lambda$main$0 的静态方法。同样地，源码中没有包含这个方法，但是它存在于字节码中：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">…</span><br><span class="line">    #1              : (in LJava8;)</span><br><span class="line">      name          : &apos;lambda$main$0&apos;</span><br><span class="line">      type          : &apos;(Ljava/lang/String;)V&apos;</span><br><span class="line">      access        : 0x1008 (STATIC SYNTHETIC)</span><br><span class="line">[0002a0] Java8.lambda$main$0:(Ljava/lang/String;)V</span><br><span class="line">0000: sget-object v0, Ljava/lang/System;.out:Ljava/io/PrintStream;</span><br><span class="line">0002: invoke-virtual &#123;v0, v1&#125;, Ljava/io/PrintStream;.println:(Ljava/lang/String;)V</span><br><span class="line">0005: return-void</span><br></pre></td></tr></table></figure>
+<p>SYNTHETIC 标志着这个方法是被生成的。并且它的字节码包含了 lambda 的代码块：调用 System.out.println(). lambda 代码块存在于原来的类的内部的原因在于，它可能需要访问该类的私有成员变量，而生成的类却是访问不到的。</p>
+<p>通过上述描述你应该就能理解脱糖的原理了。当然在 Dalvik 字节码中看到它们可能会有点密集而令人生畏（密集恐惧症）。</p>
+<h2 id="代码转换"><a href="#代码转换" class="headerlink" title="代码转换"></a>代码转换</h2><p>为了更好地理解脱糖的原理，我们可以在代码层面进行一层转换。这并不意味着脱糖实际上是这样工作的，但是有助于我们学习并理解字节码中发生的事情。</p>
+<p>再一次地，我们从最初的例子开始：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Java8</span> </span>&#123;</span><br><span class="line">  <span class="class"><span class="keyword">interface</span> <span class="title">Logger</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">log</span><span class="params">(String s)</span></span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String... args)</span> </span>&#123;</span><br><span class="line">    sayHi(s -&gt; System.out.println(s));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">sayHi</span><span class="params">(Logger logger)</span> </span>&#123;</span><br><span class="line">    logger.log(<span class="string">"Hello!"</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>首先，lambda 代码块被处理为与 main 同级的，package-private 的方法：</p>
+<figure class="highlight diff"><table><tr><td class="code"><pre><span class="line">   public static void main(String... args) &#123;</span><br><span class="line"><span class="deletion">-    sayHi(s -&gt; System.out.println(s));</span></span><br><span class="line"><span class="addition">+    sayHi(s -&gt; lambda$main$0(s));</span></span><br><span class="line">   &#125;</span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+  static void lambda$main$0(String s) &#123;</span></span><br><span class="line"><span class="addition">+    System.out.println(s);</span></span><br><span class="line"><span class="addition">+  &#125;</span></span><br></pre></td></tr></table></figure>
+<p>接着，一个实现了目标接口的类被生成了，它拥有一个调用 lambda 的方法：</p>
+<figure class="highlight diff"><table><tr><td class="code"><pre><span class="line">   public static void main(String... args) &#123;</span><br><span class="line"><span class="deletion">-    sayHi(s -&gt; lambda$main$0(s));</span></span><br><span class="line"><span class="addition">+    sayHi(new Java8$1());</span></span><br><span class="line">   &#125;</span><br><span class="line">@@</span><br><span class="line"> &#125;</span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+class Java8$1 implements Java8.Logger &#123;</span></span><br><span class="line"><span class="addition">+  @Override public void log(String s) &#123;</span></span><br><span class="line"><span class="addition">+    Java8.lambda$main$0(s);</span></span><br><span class="line"><span class="addition">+  &#125;</span></span><br><span class="line"><span class="addition">+&#125;</span></span><br></pre></td></tr></table></figure>
+<p>最后，因为这个 lambda 不需要捕获任何状态 (because the lambda doesn’t capture any state), 一个存储在 INSTANCE 中的静态单例被创建了出来：</p>
+<figure class="highlight diff"><table><tr><td class="code"><pre><span class="line">   public static void main(String... args) &#123;</span><br><span class="line"><span class="deletion">-    sayHi(new Java8$1());</span></span><br><span class="line"><span class="addition">+    sayHi(Java8$1.INSTANCE);</span></span><br><span class="line">   &#125;</span><br><span class="line">@@</span><br><span class="line"> class Java8$1 implements Java8.Logger &#123;</span><br><span class="line"><span class="addition">+  static final Java8$1 INSTANCE = new Java8$1();</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line">   @Override public void log(String s) &#123;</span><br></pre></td></tr></table></figure>
+<p>这样就脱糖出了一份在所有 API 版本都能使用的代码：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Java8</span> </span>&#123;</span><br><span class="line">  <span class="class"><span class="keyword">interface</span> <span class="title">Logger</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">log</span><span class="params">(String s)</span></span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String... args)</span> </span>&#123;</span><br><span class="line">    sayHi(Java8$<span class="number">1</span>.INSTANCE);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="keyword">static</span> <span class="keyword">void</span> lambda$main$<span class="number">0</span>(String s) &#123;</span><br><span class="line">    System.out.println(s);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">sayHi</span><span class="params">(Logger logger)</span> </span>&#123;</span><br><span class="line">    logger.log(<span class="string">"Hello!"</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Java8</span>$1 <span class="keyword">implements</span> <span class="title">Java8</span>.<span class="title">Logger</span> </span>&#123;</span><br><span class="line">  <span class="keyword">static</span> <span class="keyword">final</span> Java8$<span class="number">1</span> INSTANCE = <span class="keyword">new</span> Java8$<span class="number">1</span>();</span><br><span class="line"></span><br><span class="line">  <span class="meta">@Override</span> <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">log</span><span class="params">(String s)</span> </span>&#123;</span><br><span class="line">    Java8.lambda$main$<span class="number">0</span>(s);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>不过如果你去看了对应 lambda 生成的类的 Dalvik 字节码的话，你会发现其中并没有类似名为 Java8$1 的东西。真实情况下的名称实际上类似于 -$$Lambda$Java8$QkyWJ8jlAksLjYziID4cZLvHwoY. 至于为什么这样命名，并且带来的好处，就需要另写一篇文章来解释了…</p>
+<h2 id="原生的-Lambda"><a href="#原生的-Lambda" class="headerlink" title="原生的 Lambda"></a>原生的 Lambda</h2><p>当我们使用 dx 去尝试编译包含 lambda 的 Java 字节码为 Dalvik 字节码时，报错信息会提示你说至少得在 API 26 及其以上版本才能使用：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">$ $ANDROID_HOME/build-tools/28.0.2/dx --dex --output . *.class</span><br><span class="line">Uncaught translation error: com.android.dx.cf.code.SimException:</span><br><span class="line">  ERROR in Java8.main:([Ljava/lang/String;)V:</span><br><span class="line">    invalid opcode ba - invokedynamic requires --min-sdk-version &gt;= 26</span><br><span class="line">    (currently 13)</span><br><span class="line">1 error; aborting</span><br></pre></td></tr></table></figure>
+<p>如果你用 D8 配合 –min-api 26 参数编译的话，它会假定你将使用原生的 lambda 实现而不会进行脱糖：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">$ java -jar d8.jar \</span><br><span class="line">    --lib $ANDROID_HOME/platforms/android-28/android.jar \</span><br><span class="line">    --release \</span><br><span class="line">    --min-api 26 \</span><br><span class="line">    --output . \</span><br><span class="line">    *.class</span><br></pre></td></tr></table></figure>
+<p>但如果你去查看生成的 .dex 文件，你还是会发现类似 -$$Lambda$Java8$QkyWJ8jlAksLjYziID4cZLvHwoY 的类被生成了，这也许是 D8 的 bug?</p>
+<p>为了探究为什么脱糖过程总是在运行，我们需要深入 Java8 这个类的字节码中一探究竟：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">$ javap -v Java8.class</span><br><span class="line">class Java8 &#123;</span><br><span class="line">  public static void main(java.lang.String...);</span><br><span class="line">    Code:</span><br><span class="line">       0: invokedynamic #2, 0   // InvokeDynamic #0:log:()LJava8$Logger;</span><br><span class="line">       5: invokestatic  #3      // Method sayHi:(LJava8$Logger;)V</span><br><span class="line">       8: return</span><br><span class="line">&#125;</span><br><span class="line">…</span><br></pre></td></tr></table></figure>
+<p>上述输出已经被我简化成可读的形式，在 main 方法中你会看到 invokedynamic 位于索引 0. 对应的字节码中的第二个参数 0 是与启动引导的方法挂钩的，该方法在代码被第一次运行时会定义一些行为。在输出文件的底部有列出这些引导方法的列表：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">…</span><br><span class="line">BootstrapMethods:</span><br><span class="line">  0: #27 invokestatic java/lang/invoke/LambdaMetafactory.metafactory:(</span><br><span class="line">                        Ljava/lang/invoke/MethodHandles$Lookup;Ljava/lang/String;</span><br><span class="line">                        Ljava/lang/invoke/MethodType;Ljava/lang/invoke/MethodType;</span><br><span class="line">                        Ljava/lang/invoke/MethodHandle;Ljava/lang/invoke/MethodType;)</span><br><span class="line">                        Ljava/lang/invoke/CallSite;</span><br><span class="line">    Method arguments:</span><br><span class="line">      #28 (Ljava/lang/String;)V</span><br><span class="line">      #29 invokestatic Java8.lambda$main$0:(Ljava/lang/String;)V</span><br><span class="line">      #28 (Ljava/lang/String;)V</span><br></pre></td></tr></table></figure>
+<p>在我们的例子中，引导方法是位于 java.lang.invoke.LambdaMetafactory 这个类中的名为 metafactory 的方法。<a href="https://docs.oracle.com/javase/8/docs/api/java/lang/invoke/LambdaMetafactory.html" target="_blank" rel="noopener">这个方法存在于 JDK 中</a>，它的职责是在运行时中即时创建 lambda 相关的匿名类，这与 D8 在编译时干的事情类似。</p>
+<p>如果你有看过 java.lang.invoke 相关的 <a href="https://developer.android.com/reference/java/lang/invoke/package-summary" target="_blank" rel="noopener">Android 官方文档</a> 或 <a href="https://android.googlesource.com/platform/libcore/+/master/ojluni/src/main/java/java/lang/invoke/" target="_blank" rel="noopener">AOSP 的源码</a>，你会发现 Android 运行时里并没有这个类。Android VM 有与 invokedynamic 相同效果的字节码支持，但是 JDK 内建的 LambdaMetafactory 并不可用。</p>
+<h2 id="Method-References"><a href="#Method-References" class="headerlink" title="Method References"></a>Method References</h2><p>作为 lambda 的补充，方法引用这个语法糖同样被引入到 Java 8 中，使得创建 lambda 去指向一个已有的方法的操作变得高效。</p>
+<p>在我们的 logger 的例子中，lambda 表达式直接调用了已有的 System.out.println() 方法，我们可以简单把它转换为方法引用的形式简化代码：</p>
+<figure class="highlight diff"><table><tr><td class="code"><pre><span class="line">   public static void main(String... args) &#123;</span><br><span class="line"><span class="deletion">-    sayHi(s -&gt; System.out.println(s));</span></span><br><span class="line"><span class="addition">+    sayHi(System.out::println);</span></span><br><span class="line">   &#125;</span><br></pre></td></tr></table></figure>
+<p>使用 javac 编译后，再用 D8 处理，我们会发现与之前的 lambda 有一处显著的不同。当我们查看生成的 Dalvik 字节码时，会发现生成的 lambda 类的代码块被改变了：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[000268] -$$Lambda$1Osqr2Z9OSwjseX_0FMQJcCG_uM.log:(Ljava/lang/String;)V</span><br><span class="line">0000: iget-object v0, v1, L-$$Lambda$1Osqr2Z9OSwjseX_0FMQJcCG_uM;.f$0:Ljava/io/PrintStream;</span><br><span class="line">0002: invoke-virtual &#123;v0, v2&#125;, Ljava/io/PrintStream;.println:(Ljava/lang/String;)V</span><br><span class="line">0005: return-void</span><br></pre></td></tr></table></figure>
+<p>与之前调用生成的 Java8.lambda$main$0 类中包含 System.out.println() 的方法不同，log 的实现直接调用了 System.out.println().</p>
+<p>生成的 lambda 类不再是静态单例。字节序 0000 直接读取了 PrintStream 的实例引用，该引用即是 System.out, 它在 main 方法中被调用，并且被传递给相应的构造器（名为 &lt;init> 的字节码）(This reference is System.out which is resolved at the call-site in main and passed into the constructor (which is named &lt;init> in bytecode)):</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">[0002bc] Java8.main:([Ljava/lang/String;)V</span><br><span class="line">0000: sget-object v1, Ljava/lang/System;.out:Ljava/io/PrintStream;</span><br><span class="line">0003: new-instance v0, L-$$Lambda$1Osqr2Z9OSwjseX_0FMQJcCG_uM;</span><br><span class="line">0004: invoke-direct &#123;v0, v1&#125;, L-$$Lambda$1Osqr2Z9OSwjseX_0FMQJcCG_uM;.&lt;init&gt;:(Ljava/io/PrintStream;)V</span><br><span class="line">0008: invoke-static &#123;v0&#125;, LJava8;.sayHi:(LJava8$Logger;)V</span><br></pre></td></tr></table></figure>
+<p>将其进行源码级别的转换，可以说是非常地直截了当：</p>
+<figure class="highlight diff"><table><tr><td class="code"><pre><span class="line">   public static void main(String... args) &#123;</span><br><span class="line"><span class="deletion">-    sayHi(System.out::println);</span></span><br><span class="line"><span class="addition">+    sayHi(new -$$Lambda$1Osqr2Z9OSwjseX_0FMQJcCG_uM(System.out));</span></span><br><span class="line">   &#125;</span><br><span class="line">@@</span><br><span class="line"> &#125;</span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+class -$$Lambda$1Osqr2Z9OSwjseX_0FMQJcCG_uM implements Java8.Logger &#123;</span></span><br><span class="line"><span class="addition">+  private final PrintStream ps;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+  -$$Lambda$1Osqr2Z9OSwjseX_0FMQJcCG_uM(PrintStream ps) &#123;</span></span><br><span class="line"><span class="addition">+    this.ps = ps;</span></span><br><span class="line"><span class="addition">+  &#125;</span></span><br><span class="line"><span class="addition">+</span></span><br><span class="line"><span class="addition">+  @Override public void log(String s) &#123;</span></span><br><span class="line"><span class="addition">+    ps.println(s);</span></span><br><span class="line"><span class="addition">+  &#125;</span></span><br><span class="line"><span class="addition">+&#125;</span></span><br></pre></td></tr></table></figure>
+<h2 id="Interface-Methods"><a href="#Interface-Methods" class="headerlink" title="Interface Methods"></a>Interface Methods</h2><p>Java 8 另一个显著的特性是可以在接口中定义静态方法和默认方法。接口中的静态方法可以被用来提供相关的工厂方法，或者其他有助于操作接口的方法。接口中的默认方法则允许你给已有接口中添加默认的方法实现，同时保持兼容性（你不需要给所有实现了该接口的类再全部实现一个新的方法）：</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="class"><span class="keyword">interface</span> <span class="title">Logger</span> </span>&#123;</span><br><span class="line">  <span class="function"><span class="keyword">void</span> <span class="title">log</span><span class="params">(String s)</span></span>;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">default</span> <span class="keyword">void</span> <span class="title">log</span><span class="params">(String tag, String s)</span> </span>&#123;</span><br><span class="line">    log(tag + <span class="string">": "</span> + s);</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">static</span> Logger <span class="title">systemOut</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> System.out::println;</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>D8 同样也支持这两种语法糖。你可以按照上文提到的方式来看看 D8 是如何脱糖的。</p>
+<p>值得注意的是，这两种语法糖在 API 24 以上都是使用的原生实现。因此不像 lambda 和方法引用，–min-api 24 不会触发 D8 的脱糖操作。</p>
+<h2 id="只使用-Kotlin"><a href="#只使用-Kotlin" class="headerlink" title="只使用 Kotlin?"></a>只使用 Kotlin?</h2><p>到此为止，肯定有大量读者开始考虑 Kotlin. 没错，Kotlin 的确在语言层面上直接提供了 lambda 和方法引用，的确在接口中提供了默认方法和类似静态方法的语法糖。但这些特性都是由 kotlinc 做的实现，和 D8 支持 Java 8 的字节码干的事情差不多（具体的实现细节可能有所不同）。</p>
+<p>即时你完全使用 Kotlin 来写代码，Android 的开发工具链和 VM 对新语言特性的支持还是非常重要的。新版本的 Java 在字节码和 VM 方面更加高效，才能释放 Kotlin 更多的潜力。</p>
+<p>Kotlin 在未来的某个时刻可能会放弃对 Java 6 和 Java 7 的支持。<a href="https://blog.jetbrains.com/idea/2015/12/intellij-idea-16-eap-144-2608-is-out/" target="_blank" rel="noopener">Intellij 平台已经在 2016.1 迁移到了 Java 8</a>, Gradle 5.0 也迁移到了 Java 8. 运行在老 VM 上的平台越来越少。如果不支持 Java 8 的字节码和 VM 提供的功能，那么 Android 的生态系统就危险啦。感谢 D8 和 ART 让这一切不会发生。</p>
+<h2 id="Desugaring-APIs"><a href="#Desugaring-APIs" class="headerlink" title="Desugaring APIs"></a>Desugaring APIs</h2><p>到此为止，本文主要关注的是 Java 新版本语法糖和字节码。Java 8 其他的好处在于加入了一些新的 API, 如 streams, Optional, functional interfaces, CompletableFuture 和新的 date/time API.</p>
+<p>回到先前的 logger 的例子上，我们可以使用新的 date/time API 得知我们是什么时候打的 log:</p>
+<figure class="highlight java"><table><tr><td class="code"><pre><span class="line"><span class="keyword">import</span> java.time.*;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Java8</span> </span>&#123;</span><br><span class="line">  <span class="class"><span class="keyword">interface</span> <span class="title">Logger</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">void</span> <span class="title">log</span><span class="params">(LocalDateTime time, String s)</span></span>;</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String... args)</span> </span>&#123;</span><br><span class="line">    sayHi((time, s) -&gt; System.out.println(time + <span class="string">" "</span> + s));</span><br><span class="line">  &#125;</span><br><span class="line"></span><br><span class="line">  <span class="function"><span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">sayHi</span><span class="params">(Logger logger)</span> </span>&#123;</span><br><span class="line">    logger.log(LocalDateTime.now(), <span class="string">"Hello!"</span>);</span><br><span class="line">  &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>我们可以使用 javac 编译它并使用 D8 将其转换为 Dalvik 字节码：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">$ javac *.java</span><br><span class="line"></span><br><span class="line">$ java -jar d8.jar \</span><br><span class="line">    --lib $ANDROID_HOME/platforms/android-28/android.jar \</span><br><span class="line">    --release \</span><br><span class="line">    --output . \</span><br><span class="line">    *.class</span><br></pre></td></tr></table></figure>
+<p>你可以将其 push 到真机或者模拟器上进行验证，这是我们在先前的例子中没有做的：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">$ adb push classes.dex /sdcard</span><br><span class="line">classes.dex: 1 file pushed. 0.5 MB/s (1620 bytes in 0.003s)</span><br><span class="line"></span><br><span class="line">$ adb shell dalvikvm -cp /sdcard/classes.dex Java8</span><br><span class="line">2018-11-19T21:38:23.761 Hello!</span><br></pre></td></tr></table></figure>
+<p>在 API 26 及其以上的环境中，你会看见一条包含时间戳的字符串 “Hello!”. 但在低版本环境中会报错：</p>
+<figure class="highlight plain"><table><tr><td class="code"><pre><span class="line">java.lang.NoClassDefFoundError: Failed resolution of: Ljava/time/LocalDateTime;</span><br><span class="line">  at Java8.sayHi(Java8.java:13)</span><br><span class="line">  at Java8.main(Java8.java:9)</span><br></pre></td></tr></table></figure>
+<p>D8 只是对部分语法糖例如 lambda 进行了脱糖，但是却并没有提供诸如 LocalDateTime 这类的新的 API. 这当然是令人失望的，因为我们没法使用完整的 Java 8 新特性。</p>
+<p>开发者当然可以自己实现一套 Optional 并且使用诸如 ThreeTenBP 这类 date/time 第三方库。但是既然我们修改打包的代码，为什么我们不能让 D8 提供这些新的 APi 呢？</p>
+<p>看起来 D8 的确做了类似的事，但是只支持了一个 API: Throwable.addSuppressed(), 这个 API 允许 Java 7 的 try-with-resources 语法糖可以运行在全版本系统上。</p>
+<p>我们需要的是能支持全版本系统的 Java 8 的新 API 的兼容实现。<a href="https://blog.bazel.build/2018/07/19/java-8-language-features-in-android-apps.html" target="_blank" rel="noopener">看起来 Bazel 团队已经在做这件事了</a>。他们重写的代码无法直接使用，但是将其重新打包是可以的 (Their code that does the rewriting can’t be used, but the standalone repackaging of these JDK APIs can be). 我们需要的就是 D8 团队将其添加到工具链中，<a href="https://issuetracker.google.com/issues/114481425" target="_blank" rel="noopener">你可以在这个链接进行投票进行支持</a>。</p>
+<hr>
+<p>尽管对新语法糖的脱糖操作已经在多方面可用，但是新 API 的缺乏意味着还是与 Java 的生态系统有着巨大的差距。在大多数 App 的 minSdkVersion 26 之前，Android 的工具链只会阻碍 Java 生态系统的发展。需要同时支持 Android 和 JVM 的第三方库不能使用 Java 8 的新 API 至少五年！</p>
+<p>尽管对 Java 8 的脱糖操作已经成为 D8 的一部分，但这也不是默认的。开发者必须明确声明他们的代码需要用到 Java 8. 第三方库的开发者可以通过强制使用 Java 8 而提升这种趋势（即时你没有使用到它的任何特性）。</p>
+<p>鉴于 D8 已经开始起到实际作用了，所以前途还是光明的。即使你是一个 Kotlin 用户，你也有义务敦促 Android 支持新版本的 Java 字节码和 API 以获取更好的性能。实际上，在某些情况下，D8 还是要领先于 Java 8 的，我们将在下一篇博客中展现。</p>
+<p><em>（这篇博客是作为我的 <a href="https://jakewharton.com/digging-into-d8-and-r8/" target="_blank" rel="noopener">Digging into D8 and R8</a> 的分享的一部分，该分享并没有被直接公布出来。你可以看看其中的视频，并且关注我后续的博客）</em></p>
+<p><em>———— Jake Wharton</em></p>
+
+  </div>
+</article>
+
+    <div class="blog-post-comments">
+        <div id="disqus_thread">
+            <noscript>Please enable JavaScript to view the comments.</noscript>
+        </div>
+    </div>
+
+
+
+    </div>
+    <!--
+    
+      <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Articles</a></li>
+         
+          <li><a href="https://github.com/mthli">GitHub</a></li>
+         
+          <li><a href="https://twitter.com/mth_li">Twitter</a></li>
+         
+          <li><a href="https://instagram.com/mth_li">Ins</a></li>
+        
+      </ul>
+    </div>
+
+    <div id="toc-footer" style="display: none">
+      <ol class="toc"><li class="toc-item toc-level-2"><a class="toc-link" href="#Lambda"><span class="toc-number">1.</span> <span class="toc-text">Lambda</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Desugaring-的历史"><span class="toc-number">2.</span> <span class="toc-text">Desugaring 的历史</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#D8"><span class="toc-number">3.</span> <span class="toc-text">D8</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#代码转换"><span class="toc-number">4.</span> <span class="toc-text">代码转换</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#原生的-Lambda"><span class="toc-number">5.</span> <span class="toc-text">原生的 Lambda</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Method-References"><span class="toc-number">6.</span> <span class="toc-text">Method References</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Interface-Methods"><span class="toc-number">7.</span> <span class="toc-text">Interface Methods</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#只使用-Kotlin"><span class="toc-number">8.</span> <span class="toc-text">只使用 Kotlin?</span></a></li><li class="toc-item toc-level-2"><a class="toc-link" href="#Desugaring-APIs"><span class="toc-number">9.</span> <span class="toc-text">Desugaring APIs</span></a></li></ol>
+    </div>
+
+    <div id="share-footer" style="display: none">
+      <ul>
+  <li><a class="icon" href="http://www.facebook.com/sharer.php?u=https://mthli.github.io/2019/04/16/android-java8-support/"><i class="fab fa-facebook fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://twitter.com/share?url=https://mthli.github.io/2019/04/16/android-java8-support/&text=Android 兼容 Java 8 的原理"><i class="fab fa-twitter fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.linkedin.com/shareArticle?url=https://mthli.github.io/2019/04/16/android-java8-support/&title=Android 兼容 Java 8 的原理"><i class="fab fa-linkedin fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https://mthli.github.io/2019/04/16/android-java8-support/&is_video=false&description=Android 兼容 Java 8 的原理"><i class="fab fa-pinterest fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="mailto:?subject=Android 兼容 Java 8 的原理&body=Check out this article: https://mthli.github.io/2019/04/16/android-java8-support/"><i class="fas fa-envelope fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="https://getpocket.com/save?url=https://mthli.github.io/2019/04/16/android-java8-support/&title=Android 兼容 Java 8 的原理"><i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://reddit.com/submit?url=https://mthli.github.io/2019/04/16/android-java8-support/&title=Android 兼容 Java 8 的原理"><i class="fab fa-reddit fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.stumbleupon.com/submit?url=https://mthli.github.io/2019/04/16/android-java8-support/&title=Android 兼容 Java 8 的原理"><i class="fab fa-stumbleupon fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://digg.com/submit?url=https://mthli.github.io/2019/04/16/android-java8-support/&title=Android 兼容 Java 8 的原理"><i class="fab fa-digg fa-lg" aria-hidden="true"></i></a></li>
+  <li><a class="icon" href="http://www.tumblr.com/share/link?url=https://mthli.github.io/2019/04/16/android-java8-support/&name=Android 兼容 Java 8 的原理&description="><i class="fab fa-tumblr fa-lg" aria-hidden="true"></i></a></li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+        <a id="menu" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;"><i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        <a id="toc" class="icon" href="#" onclick="$('#toc-footer').toggle();return false;"><i class="fas fa-list fa-lg" aria-hidden="true"></i> TOC</a>
+        <a id="share" class="icon" href="#" onclick="$('#share-footer').toggle();return false;"><i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> Share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');"><i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+    
+    -->
+    <footer id="footer">
+  <div class="footer-left">
+    Copyright &copy; 2019 Matthew Lee
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/archives/">Articles</a></li>
+         
+          <li><a href="https://github.com/mthli">GitHub</a></li>
+         
+          <li><a href="https://twitter.com/mth_li">Twitter</a></li>
+         
+          <li><a href="https://instagram.com/mth_li">Ins</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>
+<!-- styles -->
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+<link rel="stylesheet" href="/lib/justified-gallery/css/justifiedGallery.min.css">
+
+<!-- jquery -->
+<script src="/lib/jquery/jquery.min.js"></script>
+<script src="/lib/justified-gallery/js/jquery.justifiedGallery.min.js"></script>
+<script src="/js/main.js"></script>
+<!-- search -->
+
+<!-- Google Analytics -->
+
+<!-- Baidu Analytics -->
+
+<!-- Disqus Comments -->
+
+    <script type="text/javascript">
+        var disqus_shortname = 'mthli';
+
+        (function(){
+            var dsq = document.createElement('script');
+            dsq.type = 'text/javascript';
+            dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        }());
+    </script>
+
+
