@@ -7,14 +7,14 @@
     <meta name="HandheldFriendly" content="True">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
     <meta name="description" content="本文译自 Jake Wharton 的博客 Android’s Java 8 Support. 我虽然在家办公了几年，但人们对 Android 不同 Java 版本的支持问题的吐槽我也有所耳闻。每年的 Google I/O 的提问环节你会发现我也在咨询这个问题；在其他相关的会议中，也会或多或少地提及。显然这也是一个复杂的问题，我们需要明确我们在讨论什么。对 Java 的支持可以有很多维度，例如语法">
-<meta name="keywords" content="Java,Android">
+<meta name="keywords" content="Android,Java">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Android 兼容 Java 8 的原理">
 <meta property="og:url" content="https://mthli.github.io/2019/04/16/android-java8-support/index.html">
 <meta property="og:site_name" content="亮哥大杂烩">
 <meta property="og:description" content="本文译自 Jake Wharton 的博客 Android’s Java 8 Support. 我虽然在家办公了几年，但人们对 Android 不同 Java 版本的支持问题的吐槽我也有所耳闻。每年的 Google I/O 的提问环节你会发现我也在咨询这个问题；在其他相关的会议中，也会或多或少地提及。显然这也是一个复杂的问题，我们需要明确我们在讨论什么。对 Java 的支持可以有很多维度，例如语法">
 <meta property="og:locale" content="en">
-<meta property="og:updated_time" content="2019-04-17T15:38:29.572Z">
+<meta property="og:updated_time" content="2019-04-17T16:13:02.312Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Android 兼容 Java 8 的原理">
 <meta name="twitter:description" content="本文译自 Jake Wharton 的博客 Android’s Java 8 Support. 我虽然在家办公了几年，但人们对 Android 不同 Java 版本的支持问题的吐槽我也有所耳闻。每年的 Google I/O 的提问环节你会发现我也在咨询这个问题；在其他相关的会议中，也会或多或少地提及。显然这也是一个复杂的问题，我们需要明确我们在讨论什么。对 Java 的支持可以有很多维度，例如语法">
@@ -228,7 +228,7 @@
 <p>尽管对 Java 8 的脱糖操作已经成为 D8 的一部分，但这也不是默认的。开发者必须明确声明他们的代码需要用到 Java 8. 第三方库的开发者可以通过强制使用 Java 8 而提升这种趋势（即时你没有使用到它的任何特性）。</p>
 <p>鉴于 D8 已经开始起到实际作用了，所以前途还是光明的。即使你是一个 Kotlin 用户，你也有义务敦促 Android 支持新版本的 Java 字节码和 API 以获取更好的性能。实际上，在某些情况下，D8 还是要领先于 Java 8 的，我们将在下一篇博客中展现。</p>
 <p><em>（这篇博客是作为我的 <a href="https://jakewharton.com/digging-into-d8-and-r8/" target="_blank" rel="noopener">Digging into D8 and R8</a> 的分享的一部分，该分享并没有被直接公布出来。你可以看看其中的视频，并且关注我后续的博客）</em></p>
-<p><em>———— Jake Wharton</em></p>
+<p>———— Jake Wharton</p>
 
   </div>
 </article>
