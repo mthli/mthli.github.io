@@ -1,7 +1,7 @@
 ---
-title: Kotlin 中的高阶函数
-date : 2018-10-02
-tag  : Kotlin
+title : Kotlin 中的高阶函数
+date  : 2018-10-02
+tag   : Kotlin
 ---
 
 首先我们要明确，Kotlin functions are [first-class](https://en.wikipedia.org/wiki/First-class_function), 这句话是什么意思呢？

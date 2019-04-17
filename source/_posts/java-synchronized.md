@@ -1,7 +1,7 @@
 ---
-title: 对 Java synchronized 关键字的理解
-date : 2019.02.20
-tag  : Java
+title : 对 Java synchronized 关键字的理解
+date  : 2019.02.20
+tag   : Java
 ---
 
 关于 synchronized 关键字 Oracle 官方有[一篇简洁易懂的文档](https://docs.oracle.com/javase/tutorial/essential/concurrency/locksync.html)，以下是我简单的整理。
