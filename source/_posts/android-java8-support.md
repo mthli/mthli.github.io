@@ -455,4 +455,4 @@ D8 只是对部分语法糖例如 lambda 进行了脱糖，但是却并没有提
 
 *（这篇博客是作为我的 [Digging into D8 and R8](https://jakewharton.com/digging-into-d8-and-r8/) 的分享的一部分，该分享并没有被直接公布出来。你可以看看其中的视频，并且关注我后续的博客）*
 
-*———— Jake Wharton*
+———— Jake Wharton
